@@ -22,7 +22,41 @@ For each of the algorithms, we are planning on implementating in both OpenMP and
 
 For example:
 - Bubble Sort (MPI)
+
+    for phase from 0 --> n:
+        if phase is even:
+            # pragma omp parallelize
+            for even values of i from 1 --> n:
+                if array[i] > array[i + 1]:
+                    swap()
+        else:
+            #pragma omp parallelize
+            for odd values of i from 1 --> n:
+                if array[i] > array[i + 1]:
+                    swap()
+
+
+    Source: https://people.cs.pitt.edu/~bmills/docs/teaching/cs1645/lecture_par_sort.pdf
+
 - Bubble Sort (CUDA)
+
+    __global__ evenOddSort(array, length):
+        while unsorted:
+            if threadID is even:
+                if array[ID] > array[ID + 1]:
+                    swap()
+            
+            __syncthreads()
+
+            if threadID is odd:
+                if array[ID] > array[ID + 1]:
+                    swap()
+
+            __syncthreads()
+
+    main():
+        evenOddSort<<< blocks, threads >>>(array, length)
+
 - Quick Sort (MPI)
 - Quick Sort (CUDA)
 - Merge Sort (MPI)
