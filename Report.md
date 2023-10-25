@@ -57,6 +57,8 @@ For example:
     main():
         evenOddSort<<< blocks, threads >>>(array, length)
 
+    Source: https://www.cs.emory.edu/~cheung/Courses/355/Syllabus/94-CUDA/SLIDES/s19.html
+
 - Quick Sort (MPI)
 - Quick Sort (CUDA)
 - Merge Sort (MPI)
