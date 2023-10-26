@@ -21,25 +21,27 @@ For each of the algorithms, we are planning on implementating in both OpenMP and
 ## Psuedocode for Algorithms
 
 For example:
+
 - Bubble Sort (MPI)
+	```
+	evenOddSort(array, n):
+		for phase from 0 --> n:
+	        if phase is even:
+	            # pragma omp parallelize
+	            for even values of i from 1 --> n:
+	                if array[i] > array[i + 1]:
+	                    swap()
+	        else:
+	            #pragma omp parallelize
+	            for odd values of i from 1 --> n:
+	                if array[i] > array[i + 1]:
+	                    swap()
 
-    for phase from 0 --> n:
-        if phase is even:
-            # pragma omp parallelize
-            for even values of i from 1 --> n:
-                if array[i] > array[i + 1]:
-                    swap()
-        else:
-            #pragma omp parallelize
-            for odd values of i from 1 --> n:
-                if array[i] > array[i + 1]:
-                    swap()
-
-
+	```
     Source: https://people.cs.pitt.edu/~bmills/docs/teaching/cs1645/lecture_par_sort.pdf
 
 - Bubble Sort (CUDA)
-
+	```
     __global__ evenOddSort(array, length):
         while unsorted:
             if threadID is even:
@@ -56,19 +58,20 @@ For example:
 
     main():
         evenOddSort<<< blocks, threads >>>(array, length)
+ 	```
 
     Source: https://www.cs.emory.edu/~cheung/Courses/355/Syllabus/94-CUDA/SLIDES/s19.html
 
 - Quick Sort (MPI)
-  
-// C program to implement the Quick Sort
-// Algorithm using MPI
-#include <mpi.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
-using namespace std;
+	```  
+	// C program to implement the Quick Sort
+	// Algorithm using MPI
+	#include <mpi.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <time.h>
+	#include <unistd.h>
+	using namespace std;
  
 	// Function to swap two numbers 
 	void swap(int* arr, int i, int j)
@@ -367,81 +370,84 @@ using namespace std;
     MPI_Finalize();
     return 0;
 	}
-source: https://www.geeksforgeeks.org/implementation-of-quick-sort-using-mpi-omp-and-posix-thread/
-- Quick Sort (CUDA)
-   
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <cutil_inline.h>
+ 	```
  
-     #define MAX_THREADS	128 
-     #define N		512
+source: https://www.geeksforgeeks.org/implementation-of-quick-sort-using-mpi-omp-and-posix-thread/
 
-     int*	r_values;
-     int*	d_values;
+- Quick Sort (CUDA)
+  
+	```   
+	#include <time.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <cutil_inline.h>
+	#define MAX_THREADS	128 
+	#define N		512
 
-     // initialize data set
-     void Init(int* values, int i) {
-        srand( time(NULL) );
+	int*	r_values;
+	int*	d_values;
+
+	// initialize data set
+	void Init(int* values, int i) {
+		srand( time(NULL) );
         printf("\n------------------------------\n");
         
 
         if (i == 0) {
         // Uniform distribution
-                printf("Data set distribution: Uniform\n");
-                for (int x = 0; x < N; ++x) {
-                        values[x] = rand() % 100;
-                        //printf("%d ", values[x]);
-                }
-        }
+			printf("Data set distribution: Uniform\n");
+			for (int x = 0; x < N; ++x) {
+				values[x] = rand() % 100;
+				//printf("%d ", values[x]);
+			}
+		}
         else if (i == 1) {
-        // Gaussian distribution
-        #define MEAN    100
-        #define STD_DEV 5
-                printf("Data set distribution: Gaussian\n");
-                float r;
-                for (int x = 0; x < N; ++x) {
-                        r  = (rand()%3 - 1) + (rand()%3 - 1) + (rand()%3 - 1);
-                        values[x] = int( round(r * STD_DEV + MEAN) );
-                        //printf("%d ", values[x]);
-                }
-        }
+        	// Gaussian distribution
+ 			#define MEAN    100
+        	#define STD_DEV 5
+			printf("Data set distribution: Gaussian\n");
+			float r;
+			for (int x = 0; x < N; ++x) {
+				r  = (rand()%3 - 1) + (rand()%3 - 1) + (rand()%3 - 1);
+				values[x] = int( round(r * STD_DEV + MEAN) );
+				//printf("%d ", values[x]);
+			}
+		}
         else if (i == 2) {
         // Bucket distribution
-                printf("Data set distribution: Bucket\n");
+			printf("Data set distribution: Bucket\n");
                 int j = 0;
                 for (int x = 0; x < N; ++x, ++j) {
-                        if (j / 20 < 1)
-                                values[x] = rand() % 20;
-                        else if (j / 20 < 2)
-                                values[x] = rand() % 20 + 20;
-                        else if (j / 20 < 3)
-                                values[x] = rand() % 20 + 40;
-                        else if (j / 20 < 4)
-                                values[x] = rand() % 20 + 60;
-                        else if (j / 20 < 5)
-                                values[x] = rand() % 20 + 80;
-                        if (j == 100)
-                                j = 0;
+					if (j / 20 < 1)
+						values[x] = rand() % 20;
+					else if (j / 20 < 2)
+						values[x] = rand() % 20 + 20;
+					else if (j / 20 < 3)
+						values[x] = rand() % 20 + 40;
+					else if (j / 20 < 4)
+						values[x] = rand() % 20 + 60;
+					else if (j / 20 < 5)
+						values[x] = rand() % 20 + 80;
+					if (j == 100)
+						j = 0;
                         //printf("%d ", values[x]);
                 }
         }
         else if (i == 3) {
         // Sorted distribution
-                printf("Data set distribution: Sorted\n");
-                /*for (int x = 0; x < N; ++x)
-                        printf("%d ", values[x]);
-		*/
+			printf("Data set distribution: Sorted\n");
+			/*for (int x = 0; x < N; ++x)
+				printf("%d ", values[x]);
+			*/
         }
-	else if (i == 4) {
+		else if (i == 4) {
         // Zero distribution
-                printf("Data set distribution: Zero\n");
-                int r = rand() % 100;
-                for (int x = 0; x < N; ++x) {
-                        values[x] = r;
-                        //printf("%d ", values[x]);
-                }
+			printf("Data set distribution: Zero\n");
+			int r = rand() % 100;
+			for (int x = 0; x < N; ++x) {
+				values[x] = r;
+				//printf("%d ", values[x]);
+			}
         }
         printf("\n");
     }
@@ -477,17 +483,16 @@ source: https://www.geeksforgeeks.org/implementation-of-quick-sort-using-mpi-omp
 			end[idx + 1] = end[idx];
 			end[idx++] = L;
 			if (end[idx] - start[idx] > end[idx - 1] - start[idx - 1]) {
-	                        // swap start[idx] and start[idx-1]
-        	                int tmp = start[idx];
-                	        start[idx] = start[idx - 1];
-                        	start[idx - 1] = tmp;
+				// swap start[idx] and start[idx-1]
+				int tmp = start[idx];
+				start[idx] = start[idx - 1];
+				start[idx - 1] = tmp;
 
-	                        // swap end[idx] and end[idx-1]
-        	                tmp = end[idx];
-                	        end[idx] = end[idx - 1];
-                        	end[idx - 1] = tmp;
-	                }
-
+				// swap end[idx] and end[idx-1]
+				tmp = end[idx];
+				end[idx] = end[idx - 1];
+				end[idx - 1] = tmp;
+			}
 		}
 		else
 			idx--;
@@ -495,21 +500,21 @@ source: https://www.geeksforgeeks.org/implementation-of-quick-sort-using-mpi-omp
     }
  
      // program main
-     int main(int argc, char **argv) {
-	printf("./quicksort starting with %d numbers...\n", N);
- 	unsigned int hTimer;
- 	size_t size = N * sizeof(int);
+	int main(int argc, char **argv) {
+		printf("./quicksort starting with %d numbers...\n", N);
+ 		unsigned int hTimer;
+ 		size_t size = N * sizeof(int);
  	
- 	// allocate host memory
- 	r_values = (int*)malloc(size);
+ 		// allocate host memory
+ 		r_values = (int*)malloc(size);
  	
-	// allocate device memory
-        cutilSafeCall( cudaMalloc((void**)&d_values, size) );
+		// allocate device memory
+		cutilSafeCall( cudaMalloc((void**)&d_values, size) );
 
-	// allocate threads per block
+		// allocate threads per block
         const unsigned int cThreadsPerBlock = 128;
                 
-	/* Types of data sets to be sorted:
+		/* Types of data sets to be sorted:
          *      1. Normal distribution
          *      2. Gaussian distribution
          *      3. Bucket distribution
@@ -517,108 +522,111 @@ source: https://www.geeksforgeeks.org/implementation-of-quick-sort-using-mpi-omp
          *      5. Zero Distribution
          */
 
-	for (int i = 0; i < 5; ++i) {
-                // initialize data set
-                Init(r_values, i);
+		for (int i = 0; i < 5; ++i) {
+			// initialize data set
+			Init(r_values, i);
 
-	 	// copy data to device	
-		cutilSafeCall( cudaMemcpy(d_values, r_values, size, cudaMemcpyHostToDevice) );
+	 		// copy data to device	
+			cutilSafeCall( cudaMemcpy(d_values, r_values, size, cudaMemcpyHostToDevice) );
 
-		printf("Beginning kernel execution...\n");
+			printf("Beginning kernel execution...\n");
 
-		cutilCheckError( cutCreateTimer(&hTimer) );
- 		cutilSafeCall( cudaThreadSynchronize() );
-		cutilCheckError( cutResetTimer(hTimer) );
-	 	cutilCheckError( cutStartTimer(hTimer) );
+			cutilCheckError( cutCreateTimer(&hTimer) );
+ 			cutilSafeCall( cudaThreadSynchronize() );
+			cutilCheckError( cutResetTimer(hTimer) );
+	 		cutilCheckError( cutStartTimer(hTimer) );
 	
-		// execute kernel
- 		quicksort <<< MAX_THREADS / cThreadsPerBlock, MAX_THREADS / cThreadsPerBlock, cThreadsPerBlock >>> (d_values);
-	 	cutilCheckMsg( "Kernel execution failed..." );
+			// execute kernel
+ 			quicksort <<< MAX_THREADS / cThreadsPerBlock, MAX_THREADS / cThreadsPerBlock, cThreadsPerBlock >>> (d_values);
+	 		cutilCheckMsg( "Kernel execution failed..." );
 
- 		cutilSafeCall( cudaThreadSynchronize() );
-	 	cutilCheckError( cutStopTimer(hTimer) );
-	 	double gpuTime = cutGetTimerValue(hTimer);
+ 			cutilSafeCall( cudaThreadSynchronize() );
+	 		cutilCheckError( cutStopTimer(hTimer) );
+	 		double gpuTime = cutGetTimerValue(hTimer);
 
- 		printf( "\nKernel execution completed in %f ms\n", gpuTime );
+ 			printf( "\nKernel execution completed in %f ms\n", gpuTime );
  	
-	 	// copy data back to host
-		cutilSafeCall( cudaMemcpy(r_values, d_values, size, cudaMemcpyDeviceToHost) );
+		 	// copy data back to host
+			cutilSafeCall( cudaMemcpy(r_values, d_values, size, cudaMemcpyDeviceToHost) );
  	
-	 	// test print
- 		/*for (int i = 0; i < N; i++) {
- 			printf("%d ", r_values[i]);
- 		}
- 		printf("\n");
-		*/
+		 	// test print
+	 		/*for (int i = 0; i < N; i++) {
+	 			printf("%d ", r_values[i]);
+	 		}
+	 		printf("\n");
+			*/
 
-		// test
-                printf("\nTesting results...\n");
-                for (int x = 0; x < N - 1; x++) {
-                        if (r_values[x] > r_values[x + 1]) {
-                                printf("Sorting failed.\n");
-                                break;
-                        }
-                        else
-                                if (x == N - 2)
-                                        printf("SORTING SUCCESSFUL\n");
-                }
+			// test
+			printf("\nTesting results...\n");
+			for (int x = 0; x < N - 1; x++) {
+				if (r_values[x] > r_values[x + 1]) {
+					printf("Sorting failed.\n");
+					break;
+				}
+				else
+					if (x == N - 2)
+						printf("SORTING SUCCESSFUL\n");
+			}
 
-	}
+		}
  	
- 	// free memory
-	cutilSafeCall( cudaFree(d_values) );
- 	free(r_values);
+ 		// free memory
+		cutilSafeCall( cudaFree(d_values) );
+ 		free(r_values);
  	
- 	cutilExit(argc, argv);
- 	cudaThreadExit();
+ 		cutilExit(argc, argv);
+ 		cudaThreadExit();
     }
-      '''
+	```
+ 
 source: https://github.com/saigowri/CUDA/blob/master/quicksort.cu
+
 - Merge Sort (MPI)
 
-
-        void merge(X, n, tmp):
-            i = 0
-            j = n / 2
-            ti = 0
-            while i < n / 2 and j < n:
-                if X[i] < X[j]:
-                    tmp[ti] = X[i]
-                    ti = ti + 1
-                    i = i + 1
-                else:
-                    tmp[ti] = X[j]
-                    ti = ti + 1
-                    j = j + 1
-      
-            while i < n / 2:
+	```
+	void merge(X, n, tmp):
+        i = 0
+        j = n / 2
+        ti = 0
+        while i < n / 2 and j < n:
+            if X[i] < X[j]:
                 tmp[ti] = X[i]
                 ti = ti + 1
                 i = i + 1
-      
-            while j < n:
+             else:
                 tmp[ti] = X[j]
                 ti = ti + 1
                 j = j + 1
-            copy(tmp, X, n)
-        end merge
+      
+        while i < n / 2:
+            tmp[ti] = X[i]
+            ti = ti + 1
+            i = i + 1
+      
+        while j < n:
+            tmp[ti] = X[j]
+            ti = ti + 1
+            j = j + 1
+        copy(tmp, X, n)
+	end merge
   
 
-        void mergesort(X, n, tmp):
-            if n < 2:
-                return
-            //Sort the first half
-            #pragma omp task (X, n, tmp)
-            mergesort(X, n / 2, tmp)
-            //Sort the second half
-            #pragma omp task (X, n, tmp)
-            mergesort(X + (n / 2), n - (n / 2), tmp)
-            //wait for both tasks to complete
-            #pragma omp taskwait
-            //Merge the sorted halves
-            merge(X, n, tmp)
-        end mergesort
+    void mergesort(X, n, tmp):
+        if n < 2:
+            return
+        //Sort the first half
+        #pragma omp task (X, n, tmp)
+        mergesort(X, n / 2, tmp)
+        //Sort the second half
+        #pragma omp task (X, n, tmp)
+		mergesort(X + (n / 2), n - (n / 2), tmp)
+        //wait for both tasks to complete
+        #pragma omp taskwait
+        //Merge the sorted halves
+        merge(X, n, tmp)
+    end mergesort
 
+	```
 
     Source: https://avcourt.github.io/tiny-cluster/2019/03/08/merge_sort.html
   
