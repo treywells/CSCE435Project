@@ -10,6 +10,8 @@
 
 ## 2. _due 10/25_ Project topic
 
+ Sorting Algorithm Performance Comparisons for OpenMP and CUDA
+
 ## 2. _due 10/25_ Brief project description (what algorithms will you be comparing and on what architectures)
 
 For the duration of this project, our team plans on communicating via Slack. 
