@@ -16,7 +16,7 @@
 
 For the duration of this project, our team plans on communicating via Slack. 
 
-For our algorithms, we plan on implementing various sorting algorithms. The three sorting algorithms we are planning on implementing are Bubble sort, Merge Sort, and Quick sort. 
+For our algorithms, we plan on implementing various sorting algorithms. The four sorting algorithms we are planning on implementing are Bubble sort, Merge Sort, quick sort, and insertion sort. 
 
 For each of the algorithms, we are planning on implementating in both OpenMP and CUDA so that we can compare the differences in CPU vs. GPU parallelization. Not only will we be comparing the differences in CPU and GPU speed but we will also be testing the differences in the algorithms on various types of inputs. For example, we might run each algorithm on a completely random input, then on a partially sorted one, then on a completely sorted one. 
 
@@ -704,3 +704,176 @@ source: https://github.com/saigowri/CUDA/blob/master/quicksort.cu
 
     
 Source: https://pushkar2196.wordpress.com/2017/04/19/mergesort-cuda-implementation/
+
+
+- Insertion Sort (MPI)
+```
+	int main ( int argc, char *argv[] )
+	{
+		int i,p,*n,j,g,s;
+		MPI_Status status;
+		MPI_Init(&argc,&argv);
+		MPI_Comm_size(MPI_COMM_WORLD,&p);
+		MPI_Comm_rank(MPI_COMM_WORLD,&i);
+		if(i==0) /* manager generates p random numbers */
+		{
+			n = (int*)calloc(p,sizeof(int));
+			srand(time(NULL));
+			for(j=0; j<p; j++) n[j] = rand() % 100;
+			if(verbose>0)
+			{
+				printf("The %d numbers to sort : ",p);
+				for(j=0; j<p; j++) printf(" %d", n[j]);
+				printf("\n"); fflush(stdout);
+			}
+		}
+		for(j=0; j<p-i; j++) /* processor i performs p-i steps */
+		if(i==0)
+		{
+			g = n[j];
+			if(verbose>0){
+				printf("Manager gets %d.\n",n[j]); fflush(stdout);
+			}
+			Compare_and_Send(i,j,&s,&g);
+		}
+		else
+		{
+			MPI_Recv(&g,1,MPI_INT,i-1,tag,MPI_COMM_WORLD,&status);
+			if(verbose>0){
+				printf("Node %d receives %d.\n",i,g); fflush(stdout);
+			}
+			Compare_and_Send(i,j,&s,&g);
+		}
+		MPI_Barrier(MPI_COMM_WORLD); /* to synchronize for printing */
+		Collect_Sorted_Sequence(i,p,s,n);
+		MPI_Finalize();
+		return 0;
+	}
+	void Compare_and_Send
+	( int myid, int step, int *smaller, int *gotten )
+	/* Processor "myid" initializes smaller with gotten
+	* at step zero, or compares smaller to gotten and
+	* sends the larger number through. */
+	{
+		if(step==0)
+			*smaller = *gotten;
+		else
+			if(*gotten > *smaller)
+			{
+				MPI_Send(gotten,1,MPI_INT,myid+1,tag,MPI_COMM_WORLD);
+				if(verbose>0)
+				{
+					printf("Node %d sends %d to %d.\n",
+					myid,*gotten,myid+1);
+					fflush(stdout);
+				}
+			}
+		else
+		{
+			MPI_Send(smaller,1,MPI_INT,myid+1,tag,
+			MPI_COMM_WORLD);
+			if(verbose>0)
+			{
+				printf("Node %d sends %d to %d.\n",
+				myid,*smaller,myid+1);
+				fflush(stdout);
+			}
+			*smaller = *gotten;
+		}
+	}
+	void Collect_Sorted_Sequence
+		( int myid, int p, int smaller, int *sorted ) {
+		/* Processor "myid" sends its smaller number to the
+		* manager who collects the sorted numbers in the
+		* sorted array, which is then printed. */
+		MPI_Status status;
+		int k;
+		if(myid==0) {
+			sorted[0] = smaller;
+			for(k=1; k<p; k++)
+			MPI_Recv(&sorted[k],1,MPI_INT,k,tag,
+			MPI_COMM_WORLD,&status);
+			printf("The sorted sequence : ");
+			for(k=0; k<p; k++) printf(" %d",sorted[k]);
+			printf("\n");
+		}
+		else
+			MPI_Send(&smaller,1,MPI_INT,0,tag,MPI_COMM_WORLD);
+	}
+```
+Source: https://homepages.math.uic.edu/~jan/mcs572/pipelinedsort.pdf
+
+- Insertion Sort (CUDA)
+```
+	#include <stdio.h>
+	#include <stdlib.h>
+	
+	#define N 16
+	
+	__global__ void insertionsort(int n, const float *values, int *indices) { 
+	  int key_i, j; 
+	  for (int i = blockIdx.x; i < n; i += gridDim.x) {
+	    key_i = indices[i];
+	    j = i - 1; 
+	    while (j >= 0 && values[indices[j]] > values[key_i]) { 
+	      indices[j + 1] = indices[j];
+	      j = j - 1; 
+	    } 
+	    indices[j + 1] = key_i; 
+	  } 
+	}
+	
+	/**
+	  * Indices need not to be copied. They will be set in the function itself.
+	  */
+	__global__ void argsort(int n, const float* values, int *indices) {
+	  for (int i = blockIdx.x; i < n; i += gridDim.x) {
+	    indices[i] = i;
+	  }
+	  __syncthreads();
+	}
+	
+	int main() {
+	    // The h prefix stands for host
+	    float h_values[N];
+	    int h_indices[N];
+	
+	    // The d prefix stands for device
+	    float *d_values;
+	    int *d_indices;
+	    cudaMalloc((void **)&d_values, N*sizeof(float));
+	    cudaMalloc((void **)&d_indices, N*sizeof(int));
+	
+	    // Random d_valuesta
+	    for (int i = 0; i<N; ++i) {
+	      h_values[i] = rand() % 100;
+	    }
+	
+	    // Copy values to GPU
+	    cudaMemcpy(d_values, h_values, N*sizeof(float), cudaMemcpyHostToDevice);
+	
+	    // Launch GPU with N threads
+	    argsort<<<N, 1>>>(N, d_values, d_indices);
+	    insertionsort<<<N, 1>>>(N, d_values, d_indices);
+	
+	    // Copy indices back
+	    cudaMemcpy(h_indices, d_indices, N*sizeof(int), cudaMemcpyDeviceToHost);
+	
+	    printf("Indices:\n");
+	    for (int i = 0; i<N; ++i) {
+	        printf("%i\n", h_indices[i]);
+	    }
+	    
+	    printf("Values (should now be sorted):\n");
+	    for (int i = 0; i<N; ++i) {
+	        printf("%f\n", h_values[h_indices[i]]);
+	    }
+	
+	    // Free up the arrays on the GPU.
+	    cudaFree(d_values);
+	    cudaFree(d_indices);
+	
+	    return 0;
+	}
+```
+Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
