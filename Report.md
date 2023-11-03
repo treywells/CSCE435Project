@@ -1,14 +1,14 @@
 # CSCE 435 Group project
 
+## 0. Group number: 
+
 ## 1. Group members:
 1. Trey Wells
 2. Aaron Weast
 3. Jacob Miller
 4. David Vilenchouk
 
----
-
-## 2. _due 10/25_ Project topic
+## 2. Project topic (e.g., parallel sorting algorithms)
 
  Sorting Algorithm Performance Comparisons for OpenMP and CUDA
 
