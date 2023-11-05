@@ -26,6 +26,12 @@ const char* comp_large = "comp_large";
 const char* correctness_check = "correctness_check";
 
 
+/*
+Source: https://github.com/domkris/CUDA-Bubble-Sort/blob/master/CUDABubbleSort/kernel.cu
+AI (Chat GPT) was used to create functions for data generation and correctness checking
+*/
+
+
 
 __host__ void bubbleSortHost(int *array, int index)
 {
