@@ -15,7 +15,16 @@
 using namespace std;
 
 int flag = 0;
-int SIZE, BLOCKS, THREADS;
+int NUM_VALS, BLOCKS, THREADS;
+
+const char* main_function = "main";
+const char* data_init = "data_init";
+const char* comm = "comm";
+const char* comm_large = "comm_large";
+const char* comp = "comp";
+const char* comp_large = "comp_large";
+const char* correctness_check = "correctness_check";
+
 
 
 __host__ void bubbleSortHost(int *array, int index)
@@ -23,7 +32,7 @@ __host__ void bubbleSortHost(int *array, int index)
 	int temp;
 	do {
 
-		for (int i = 0; i < SIZE - 1 - index * 2 - flag; i++) {
+		for (int i = 0; i < NUM_VALS - 1 - index * 2 - flag; i++) {
 			if (array[index * 2 + i] > array[index * 2 + 1 + i]) {
 				temp = array[index * 2 + 1 + i];
 				array[index * 2 + 1 + i] = array[index * 2 + i];
@@ -33,7 +42,7 @@ __host__ void bubbleSortHost(int *array, int index)
 
 		flag++;
 
-	} while (SIZE - 1 - index * 2 - flag> 0);
+	} while (NUM_VALS - 1 - index * 2 - flag> 0);
 }
 
 __global__ void bubbleSortDeviceParallel(int *array, int offSet, int THREADS, int BLOCKS)
@@ -103,44 +112,36 @@ bool isSorted(int* array, int size) {
 
 int main(int argc, char* argv[])
 {
+    CALI_MARK_BEGIN(main_function);
+
 	srand(time(NULL));
 	THREADS = atoi(argv[1]);
-    SIZE = atoi(argv[2]);
-    BLOCKS = SIZE / THREADS;
+    NUM_VALS = atoi(argv[2]);
+    size_t size = NUM_VALS * sizeof(int);
+    BLOCKS = NUM_VALS / THREADS;
 	int *h_array;
 	int *d_array;
 	int offSet;
 
-	h_array = new int[SIZE];
-	
-	// for (int i = 0; i < SIZE; i++) {
-	//     h_array[i] = rand() % SIZE;
-	// }
+	h_array = new int[NUM_VALS];
 
-
-    if (cudaMalloc(&d_array, sizeof(int) * SIZE) != cudaSuccess)
+    if (cudaMalloc(&d_array, size) != cudaSuccess)
     {
         cout << "D_ARRAY ALLOCATING NOT WORKING!" << endl;
         return 0;
     }
 
+    CALI_MARK_BEGIN(data_init);
+
     // Generate the data in parallel
     // Generate in reverse sorted order
-    generateDataKernel<<<BLOCKS, THREADS>>>(d_array, SIZE);
+    generateDataKernel<<<BLOCKS, THREADS>>>(d_array, NUM_VALS);
     cudaDeviceSynchronize();
 
-    if (isSorted(h_array, SIZE)) {
-        printf("Starting array is already sorted!\n");
-    } else {
-        printf("Starting array is definitely not already sorted!\n");
-    }
+    CALI_MARK_END(data_init);
 
-    if (cudaMemcpy(d_array, h_array, sizeof(int)* SIZE, cudaMemcpyHostToDevice) != cudaSuccess)
-    {
-        cout << "cudaMemcpyHostToDevice ERROR!" << endl;
-        cudaFree(d_array);
-        return 0;
-    }
+    CALI_MARK_BEGIN(comp);
+    CALI_MARK_BEGIN(comp_large);
 
 
     do {
@@ -156,40 +157,45 @@ int main(int argc, char* argv[])
 
     cudaDeviceSynchronize();
 
+    CALI_MARK_END(comp_large);
+    CALI_MARK_END(comp);
 
-    if (cudaMemcpy(h_array, d_array, sizeof(int)* SIZE, cudaMemcpyDeviceToHost) != cudaSuccess)
-    {
-        delete[] h_array;
-        cudaFree(d_array);
-        cout << "cudaMemcpyDeviceToHost Error" << endl;
-        system("pause");
-        return 0;
-    }
+    CALI_MARK_BEGIN(comm);
+    CALI_MARK_BEGIN(comm_large);
 
-    if (isSorted(h_array, SIZE)) {
+    cudaMemcpy(h_array, d_array, size, cudaMemcpyDeviceToHost);
+
+    CALI_MARK_END(comm_large);
+    CALI_MARK_END(comm);
+
+    CALI_MARK_BEGIN(correctness_check);
+
+    if (isSorted(h_array, NUM_VALS)) {
         printf("Ending array is properly sorted!\n");
     } else {
         printf("Ending array is not properly sorted :(\n");
     }
+
+    CALI_MARK_END(correctness_check);
 
 	// FREEING MEMORY OF CPU & GPU
 	delete[] h_array;
 	cudaFree(d_array);
 	cudaDeviceReset();
 
-    char algorithm = "BubbleSort"
-    char programmingModel = "CUDA"
-    char datatype = "int"
+    CALI_MARK_END(main_function);
+
+    const char* algorithm = "BubbleSort";
+    const char* programmingModel = "CUDA";
+    const char* datatype = "int";
     int sizeOfDatatype = sizeof(int);
-    int inputSize = SIZE;
-    char inputType = "ReverseSorted";
+    int inputSize = NUM_VALS;
+    const char* inputType = "ReverseSorted";
     int num_procs = 1;
     int num_threads = THREADS;
-    int num_blocks = BLOCKS;
+    int num_blocks = NUM_VALS / THREADS;
     int group_number = 18;
-    char implementation_source = "Online and AI";
-
-
+    const char* implementation_source = "Online and AI";
 
     adiak::init(NULL);
     adiak::launchdate();    // launch date of the job
@@ -206,7 +212,7 @@ int main(int argc, char* argv[])
     adiak::value("num_threads", num_threads); // The number of CUDA or OpenMP threads
     adiak::value("num_blocks", num_blocks); // The number of CUDA blocks 
     adiak::value("group_num", group_number); // The number of your group (integer, e.g., 1, 10)
-    adiak::value("implementation_source", implementation_source) // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
+    adiak::value("implementation_source", implementation_source); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
 	return 0;
 }
