@@ -14,11 +14,8 @@
 
 using namespace std;
 
-#define SIZE 1024 // FOR PARALEL GPU  SIZE HAS TO BE 2^n 1024
-#define THREADS 4 // FOR PARALEL GPU  THREADS = SIZE / (BLOCKS * 2) 
-#define BLOCKS 128//FOR PARALEL GPU  BLOCKS = SIZE / (THREADS * 2) 
-string type = "DEVICE";  // USE "HOST" FOR CPU BUBBLE SORT, USE "DEVICE" FOR GPU BUBBLE SORT
 int flag = 0;
+int SIZE, BLOCKS, THREADS;
 
 
 __host__ void bubbleSortHost(int *array, int index)
@@ -39,22 +36,7 @@ __host__ void bubbleSortHost(int *array, int index)
 	} while (SIZE - 1 - index * 2 - flag> 0);
 }
 
-// NOT USED BUT THERE JUST IN CASE
-__global__ void bubbleSortDeviceSerial(int size, int *array)
-{
-	int i, j, temp;
-	for (i = 1; i < size; i++) {
-		for (j = 0; j < size - 1; j++) {
-			if (array[j] > array[j + 1]) {
-				temp = array[j + 1];
-				array[j + 1] = array[j];
-				array[j] = temp;
-			}
-		}
-	}
-}
-
-__global__ void bubbleSortDeviceParallel(int *array, int offSet)
+__global__ void bubbleSortDeviceParallel(int *array, int offSet, int THREADS, int BLOCKS)
 {
 
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -102,137 +84,129 @@ __global__ void bubbleSortDeviceParallel(int *array, int offSet)
 
 }
 
-int main()
+__global__ void generateDataKernel(int* array, int size) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid < size) {
+        // Generate data in parallel with a reverse sorted array
+        array[tid] = size - tid; // Reverse sorted data
+    }
+}
+
+bool isSorted(int* array, int size) {
+    for (int i = 0; i < size - 1; i++) {
+        if (array[i] > array[i + 1]) {
+            return false;  // Array is not sorted
+        }
+    }
+    return true;  // Array is sorted
+}
+
+int main(int argc, char* argv[])
 {
 	srand(time(NULL));
-	int h_count = SIZE;
-	int counter = BLOCKS;
+	THREADS = atoi(argv[1]);
+    SIZE = atoi(argv[2]);
+    BLOCKS = SIZE / THREADS;
 	int *h_array;
 	int *d_array;
 	int offSet;
 
-	h_array = new int[h_count];
-
-	// 1. OPTION: TYPE ELEMENTS OF h_array
-	/*
-	cout << "TYPE ELEMENTS OF ARRAY: " << endl;
-	for (int i = 0; i < h_count; i++) {
-	cout << i + 1 << ". ELEMENT: ";
-	cin >> h_array[i];
-	}
-	cout << "" << endl;
-	*/
-
-
-	// 2.OPTION: GENERATING RANDOM ELEMENTS FOR h_array
+	h_array = new int[SIZE];
 	
-	for (int i = 0; i < h_count; i++) {
-	h_array[i] = rand() % SIZE;
-	}
-	
-
-
-	// 3. OPTION 999.... 0..1
-	// for (int i = 0; i < h_count; i++) {
-	// 	h_array[i] = SIZE - i;
+	// for (int i = 0; i < SIZE; i++) {
+	//     h_array[i] = rand() % SIZE;
 	// }
 
-	// BUBBLE SORT USING CPU
-	if (type == "HOST") {
 
-		cout << "ELEMENTS OF ARRAY BEFORE SORT: " << endl;
-		for (int i = 0; i < SIZE; i++)
-		{
-			cout << h_array[i] << " ";
-		}
-		cout << endl;
+    if (cudaMalloc(&d_array, sizeof(int) * SIZE) != cudaSuccess)
+    {
+        cout << "D_ARRAY ALLOCATING NOT WORKING!" << endl;
+        return 0;
+    }
 
-		cudaEvent_t beginEvent;
-		cudaEvent_t endEvent;
+    // Generate the data in parallel
+    // Generate in reverse sorted order
+    generateDataKernel<<<BLOCKS, THREADS>>>(d_array, SIZE);
+    cudaDeviceSynchronize();
 
-		cudaEventCreate(&beginEvent);
-		cudaEventCreate(&endEvent);
+    if (isSorted(h_array, SIZE)) {
+        printf("Starting array is already sorted!\n");
+    } else {
+        printf("Starting array is definitely not already sorted!\n");
+    }
 
-		cudaEventRecord(beginEvent);
-
-		thread bubbleSortCPU[THREADS];
-		for (int i = 0; i < THREADS; i++) {
-			bubbleSortCPU[i] = thread(bubbleSortHost, h_array, i);
-			bubbleSortCPU[i].join();
-		}
-
-		cudaEventRecord(endEvent);
-		cudaEventSynchronize(endEvent);
-
-		float timeValue = 0;
-		cudaEventElapsedTime(&timeValue, beginEvent, endEvent);
-
-		cout << "CPU Time: " << timeValue << endl;
-		cudaEventDestroy(beginEvent);
-		cudaEventDestroy(endEvent);
-
-		// ARRAY AFTER BUBBLE SORT
-		cout << "BUBBLE SORT RESULTS: " << endl;
-		for (int i = 0; i < h_count; i++) {
-			cout << h_array[i] << " ";
-		}
-		cout << endl;
-	}
-
-	// BUBBLE SORT USING GPU
-	if (type == "DEVICE") {
-
-		if (cudaMalloc(&d_array, sizeof(int) * h_count) != cudaSuccess)
-		{
-			cout << "D_ARRAY ALLOCATING NOT WORKING!" << endl;
-			return 0;
-		}
-
-		if (cudaMemcpy(d_array, h_array, sizeof(int)* h_count, cudaMemcpyHostToDevice) != cudaSuccess)
-		{
-			cout << "cudaMemcpyHostToDevice ERROR!" << endl;
-			cudaFree(d_array);
-			return 0;
-		}
+    if (cudaMemcpy(d_array, h_array, sizeof(int)* SIZE, cudaMemcpyHostToDevice) != cudaSuccess)
+    {
+        cout << "cudaMemcpyHostToDevice ERROR!" << endl;
+        cudaFree(d_array);
+        return 0;
+    }
 
 
-		do {
+    do {
 
-			for (int i = 0; i < THREADS * 2; i++) {
-				offSet = i;
-				// POSSIBLE CHANGE: if offset != 0 USE bubbleSortDeviceParallel << < BLOCKS-1, THREADS >> > (d_array, offSet);
-				bubbleSortDeviceParallel << < BLOCKS, THREADS >> > (d_array, offSet);
-			}
+        for (int i = 0; i < THREADS * 2; i++) {
+            offSet = i;
+            // POSSIBLE CHANGE: if offset != 0 USE bubbleSortDeviceParallel << < BLOCKS-1, THREADS >> > (d_array, offSet);
+            bubbleSortDeviceParallel << < BLOCKS, THREADS >> > (d_array, offSet, THREADS, BLOCKS);
+        }
 
-			counter--;
-		} while (counter > 0);
+        BLOCKS--;
+    } while (BLOCKS > 0);
 
-		cudaDeviceSynchronize();
-
-
-		if (cudaMemcpy(h_array, d_array, sizeof(int)* h_count, cudaMemcpyDeviceToHost) != cudaSuccess)
-		{
-			delete[] h_array;
-			cudaFree(d_array);
-			cout << "cudaMemcpyDeviceToHost Error" << endl;
-			system("pause");
-			return 0;
-		}
-
-		// ARRAY AFTER BUBBLE SORT
-		cout << "BUBBLE SORT RESULTS: " << endl;
-		for (int i = 0; i < h_count; i++) {
-			printf("%d ", h_array[i]);
-		}
-		printf("\n");
+    cudaDeviceSynchronize();
 
 
-	}
+    if (cudaMemcpy(h_array, d_array, sizeof(int)* SIZE, cudaMemcpyDeviceToHost) != cudaSuccess)
+    {
+        delete[] h_array;
+        cudaFree(d_array);
+        cout << "cudaMemcpyDeviceToHost Error" << endl;
+        system("pause");
+        return 0;
+    }
+
+    if (isSorted(h_array, SIZE)) {
+        printf("Ending array is properly sorted!\n");
+    } else {
+        printf("Ending array is not properly sorted :(\n");
+    }
 
 	// FREEING MEMORY OF CPU & GPU
 	delete[] h_array;
 	cudaFree(d_array);
 	cudaDeviceReset();
+
+    char algorithm = "BubbleSort"
+    char programmingModel = "CUDA"
+    char datatype = "int"
+    int sizeOfDatatype = sizeof(int);
+    int inputSize = SIZE;
+    char inputType = "ReverseSorted";
+    int num_procs = 1;
+    int num_threads = THREADS;
+    int num_blocks = BLOCKS;
+    int group_number = 18;
+    char implementation_source = "Online and AI";
+
+
+
+    adiak::init(NULL);
+    adiak::launchdate();    // launch date of the job
+    adiak::libraries();     // Libraries used
+    adiak::cmdline();       // Command line used to launch the job
+    adiak::clustername();   // Name of the cluster
+    adiak::value("Algorithm", algorithm); // The name of the algorithm you are using (e.g., "MergeSort", "BitonicSort")
+    adiak::value("ProgrammingModel", programmingModel); // e.g., "MPI", "CUDA", "MPIwithCUDA"
+    adiak::value("Datatype", datatype); // The datatype of input elements (e.g., double, int, float)
+    adiak::value("SizeOfDatatype", sizeOfDatatype); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
+    adiak::value("InputSize", inputSize); // The number of elements in input dataset (1000)
+    adiak::value("InputType", inputType); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+    adiak::value("num_procs", num_procs); // The number of processors (MPI ranks)
+    adiak::value("num_threads", num_threads); // The number of CUDA or OpenMP threads
+    adiak::value("num_blocks", num_blocks); // The number of CUDA blocks 
+    adiak::value("group_num", group_number); // The number of your group (integer, e.g., 1, 10)
+    adiak::value("implementation_source", implementation_source) // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
 
 	return 0;
 }
