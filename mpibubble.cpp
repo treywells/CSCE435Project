@@ -23,11 +23,6 @@ Source: https://github.com/erenalbayrak/Odd-Even-Sort-mit-MPI/blob/master/implem
 AI (Chat GPT) was used to create functions for data generation and correctness checking
 */
 
-/**
- * @param binary_file: the binary file on Disk.
- * @param vector: the values from binary file will store in the vector.
- * @return EXIT_SUCCESS or EXIT_FAILURE
- * */
 int fill_vector_with_numbers(int *data,
                                  long rank,
                                  int procs,
@@ -35,7 +30,7 @@ int fill_vector_with_numbers(int *data,
 {
 
     for (int i = 0; i < localSize; i++) {
-		data[i] = localSize * procs - (i + localSize * rank);
+		data[i] = localSize * procs - (i + localSize * rank);    // reverse order
 	}
 
     return EXIT_SUCCESS;
@@ -129,21 +124,15 @@ int isSorted(int* nums, int vals) {
 	return 1;
 }
 
-/**
- * Compile:      mpic++ OddEvenSort.cpp -o OddEvenSort -std=gnu++0x
- * Example-Call: mpirun -np 4 ./OddEvenSort "<numbers_file.bin>" <y>
- * <y> output on console
- * */
 int main(int argc, char** argv)
 {
-
-    CALI_MARK_BEGIN(main_function);
-
     int rank, count_processes;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &count_processes);
+
+	CALI_MARK_BEGIN(main_function);
 
     int vals = atoi(argv[1]);
 	int localSize = vals/count_processes;
@@ -170,10 +159,9 @@ int main(int argc, char** argv)
 	CALI_MARK_END(comm_large);
     CALI_MARK_END(comm);
 	
-	CALI_MARK_BEGIN(correctness_check);
-
     // Print the sorted data on rank 0
     if (rank == 0) {
+		CALI_MARK_BEGIN(correctness_check);
         // gathered_data now contains all data from all processes
 		if (isSorted(gathered_data, vals)) {
 			printf("Data is definitely now sorted\n");
@@ -181,15 +169,15 @@ int main(int argc, char** argv)
 			printf("Data is definitely not sorted :(\n");
 		}
 
+    	CALI_MARK_END(correctness_check);
         // Clean up gathered_data
         delete[] gathered_data;
     }
 
-    CALI_MARK_END(correctness_check);
-
-	delete[] data;
 
     CALI_MARK_END(main_function);
+	delete[] data;
+
 
 	if (rank == 0) {
 
@@ -197,7 +185,7 @@ int main(int argc, char** argv)
 		const char* programmingModel = "MPI";
 		const char* datatype = "int";
 		int sizeOfDatatype = sizeof(int);
-		int inputSize = NUM_VALS;
+		int inputSize = vals;
 		const char* inputType = "ReverseSorted";
 		int num_procs = count_processes;
 		const char* num_threads = "N/A";
