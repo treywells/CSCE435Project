@@ -13,12 +13,12 @@ using namespace std;
  * */
 int fill_vector_with_numbers(int *data,
                                  long rank,
-                                 int count_processes,
+                                 int procs,
 								 int localSize)
 {
 
     for (int i = 0; i < localSize; i++) {
-		data[i] = i;
+		data[i] = localSize * procs - (i + localSize * rank);
 	}
 
     return EXIT_SUCCESS;
