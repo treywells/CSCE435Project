@@ -10,17 +10,23 @@
 
 ## 2. Project topic (e.g., parallel sorting algorithms)
 
- Sorting Algorithm Performance Comparisons for OpenMP and CUDA
+ Sorting Algorithm Performance Comparisons for MPI and CUDA
 
-## 2. _due 10/25_ Brief project description (what algorithms will you be comparing and on what architectures)
+### 2a. Brief project description (what algorithms will you be comparing and on what architectures)
 
 For the duration of this project, our team plans on communicating via Slack. 
 
 For our algorithms, we plan on implementing various sorting algorithms. The four sorting algorithms we are planning on implementing are Bubble sort, Merge Sort, quick sort, and insertion sort. 
 
-For each of the algorithms, we are planning on implementating in both OpenMP and CUDA so that we can compare the differences in CPU vs. GPU parallelization. Not only will we be comparing the differences in CPU and GPU speed but we will also be testing the differences in the algorithms on various types of inputs. For example, we might run each algorithm on a completely random input, then on a partially sorted one, then on a completely sorted one. 
+For each of the algorithms, we are planning on implementating in both MPI and CUDA so that we can compare the differences in CPU vs. GPU parallelization. Not only will we be comparing the differences in CPU and GPU speed but we will also be testing the differences in the algorithms on various types of inputs. For example, we might run each algorithm on a completely random input, then on a partially sorted one, then on a completely sorted one. 
 
-## Psuedocode for Algorithms
+- Quicksort (MPI):
+	We have implemented the quicksort algorithm that uses MPI to communicate and function in parralell. It uses a recursive tree method in order to disperse segments to multiple proccsess to sort. It will combine the arrays after sorted.
+
+- Quicksort (CUDA):
+	We have implemented the quicksort algorithm using CUDA on the GPU to communicate and function in parralell. It uses an iterative approach to call the kernal which will create partitions of the data for multiple proccess to use until there are not anymore proccesses. It combines the sorted data afterwards.
+
+### 2b. Pseudocode for each parallel algorithm
 
 For example:
 
