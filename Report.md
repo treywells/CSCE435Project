@@ -379,84 +379,12 @@ source: https://www.geeksforgeeks.org/implementation-of-quick-sort-using-mpi-omp
 - Quick Sort (CUDA)
   
 	```   
-	#include <time.h>
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <cutil_inline.h>
-	#define MAX_THREADS	128 
-	#define N		512
+	#include<stdio.h>
+    #include <cuda.h>
+    #include<cuda_runtime.h>
 
-	int*	r_values;
-	int*	d_values;
-
-	// initialize data set
-	void Init(int* values, int i) {
-		srand( time(NULL) );
-        printf("\n------------------------------\n");
-        
-
-        if (i == 0) {
-        // Uniform distribution
-			printf("Data set distribution: Uniform\n");
-			for (int x = 0; x < N; ++x) {
-				values[x] = rand() % 100;
-				//printf("%d ", values[x]);
-			}
-		}
-        else if (i == 1) {
-        	// Gaussian distribution
- 			#define MEAN    100
-        	#define STD_DEV 5
-			printf("Data set distribution: Gaussian\n");
-			float r;
-			for (int x = 0; x < N; ++x) {
-				r  = (rand()%3 - 1) + (rand()%3 - 1) + (rand()%3 - 1);
-				values[x] = int( round(r * STD_DEV + MEAN) );
-				//printf("%d ", values[x]);
-			}
-		}
-        else if (i == 2) {
-        // Bucket distribution
-			printf("Data set distribution: Bucket\n");
-                int j = 0;
-                for (int x = 0; x < N; ++x, ++j) {
-					if (j / 20 < 1)
-						values[x] = rand() % 20;
-					else if (j / 20 < 2)
-						values[x] = rand() % 20 + 20;
-					else if (j / 20 < 3)
-						values[x] = rand() % 20 + 40;
-					else if (j / 20 < 4)
-						values[x] = rand() % 20 + 60;
-					else if (j / 20 < 5)
-						values[x] = rand() % 20 + 80;
-					if (j == 100)
-						j = 0;
-                        //printf("%d ", values[x]);
-                }
-        }
-        else if (i == 3) {
-        // Sorted distribution
-			printf("Data set distribution: Sorted\n");
-			/*for (int x = 0; x < N; ++x)
-				printf("%d ", values[x]);
-			*/
-        }
-		else if (i == 4) {
-        // Zero distribution
-			printf("Data set distribution: Zero\n");
-			int r = rand() % 100;
-			for (int x = 0; x < N; ++x) {
-				values[x] = r;
-				//printf("%d ", values[x]);
-			}
-        }
-        printf("\n");
-    }
-
-     // Kernel function
-     __global__ static void quicksort(int* values) {
-     #define MAX_LEVELS	300
+ __global__ static void quicksort(int* values,int N) {
+ #define MAX_LEVELS	300
 
 	int pivot, L, R;
 	int idx =  threadIdx.x + blockIdx.x * blockDim.x;
@@ -485,103 +413,59 @@ source: https://www.geeksforgeeks.org/implementation-of-quick-sort-using-mpi-omp
 			end[idx + 1] = end[idx];
 			end[idx++] = L;
 			if (end[idx] - start[idx] > end[idx - 1] - start[idx - 1]) {
-				// swap start[idx] and start[idx-1]
-				int tmp = start[idx];
-				start[idx] = start[idx - 1];
-				start[idx - 1] = tmp;
+	                        // swap start[idx] and start[idx-1]
+        	                int tmp = start[idx];
+                	        start[idx] = start[idx - 1];
+                        	start[idx - 1] = tmp;
 
-				// swap end[idx] and end[idx-1]
-				tmp = end[idx];
-				end[idx] = end[idx - 1];
-				end[idx - 1] = tmp;
-			}
+	                        // swap end[idx] and end[idx-1]
+        	                tmp = end[idx];
+                	        end[idx] = end[idx - 1];
+                        	end[idx - 1] = tmp;
+	                }
+
 		}
 		else
 			idx--;
 	}
-    }
- 
-     // program main
-	int main(int argc, char **argv) {
-		printf("./quicksort starting with %d numbers...\n", N);
- 		unsigned int hTimer;
- 		size_t size = N * sizeof(int);
- 	
- 		// allocate host memory
- 		r_values = (int*)malloc(size);
- 	
-		// allocate device memory
-		cutilSafeCall( cudaMalloc((void**)&d_values, size) );
+}
 
-		// allocate threads per block
-        const unsigned int cThreadsPerBlock = 128;
-                
-		/* Types of data sets to be sorted:
-         *      1. Normal distribution
-         *      2. Gaussian distribution
-         *      3. Bucket distribution
-         *      4. Sorted Distribution
-         *      5. Zero Distribution
-         */
 
-		for (int i = 0; i < 5; ++i) {
-			// initialize data set
-			Init(r_values, i);
+int main(){
+  int x[20],size,i;
+  int *d_x,*d_size,*d_i;
 
-	 		// copy data to device	
-			cutilSafeCall( cudaMemcpy(d_values, r_values, size, cudaMemcpyHostToDevice) );
+  printf("Enter size of the array: ");
+  scanf("%d",&size);
 
-			printf("Beginning kernel execution...\n");
+  printf("Enter %d elements: ",size);
+  for(i=0;i<size;i++)
+    scanf("%d",&x[i]);
+  	cudaMalloc((void **)&d_x,sizeof(int)*size);
+    cudaMalloc((void **)&d_size,sizeof(int));
+    cudaMalloc((void **)&d_i,sizeof(int));
 
-			cutilCheckError( cutCreateTimer(&hTimer) );
- 			cutilSafeCall( cudaThreadSynchronize() );
-			cutilCheckError( cutResetTimer(hTimer) );
-	 		cutilCheckError( cutStartTimer(hTimer) );
-	
-			// execute kernel
- 			quicksort <<< MAX_THREADS / cThreadsPerBlock, MAX_THREADS / cThreadsPerBlock, cThreadsPerBlock >>> (d_values);
-	 		cutilCheckMsg( "Kernel execution failed..." );
+  cudaMemcpy(d_x, &x,  sizeof( int)*size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_size, &size,  sizeof( int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_i, &i,  sizeof( int), cudaMemcpyHostToDevice);
 
- 			cutilSafeCall( cudaThreadSynchronize() );
-	 		cutilCheckError( cutStopTimer(hTimer) );
-	 		double gpuTime = cutGetTimerValue(hTimer);
+  quicksort<<<1,1,size>>>(d_x,size);
+  cudaMemcpy(x, d_x, sizeof(int)*size, cudaMemcpyDeviceToHost);
+  printf("Sorted elements: ");
+  for(i=0;i<size;i++)
+    printf(" %d",x[i]);
 
- 			printf( "\nKernel execution completed in %f ms\n", gpuTime );
- 	
-		 	// copy data back to host
-			cutilSafeCall( cudaMemcpy(r_values, d_values, size, cudaMemcpyDeviceToHost) );
- 	
-		 	// test print
-	 		/*for (int i = 0; i < N; i++) {
-	 			printf("%d ", r_values[i]);
-	 		}
-	 		printf("\n");
-			*/
+ cudaFree(d_x);
+ cudaFree(d_size);
+ cudaFree(d_i);
 
-			// test
-			printf("\nTesting results...\n");
-			for (int x = 0; x < N - 1; x++) {
-				if (r_values[x] > r_values[x + 1]) {
-					printf("Sorting failed.\n");
-					break;
-				}
-				else
-					if (x == N - 2)
-						printf("SORTING SUCCESSFUL\n");
-			}
 
-		}
- 	
- 		// free memory
-		cutilSafeCall( cudaFree(d_values) );
- 		free(r_values);
- 	
- 		cutilExit(argc, argv);
- 		cudaThreadExit();
-    }
+
+  return 0;
+}
 	```
  
-source: https://github.com/saigowri/CUDA/blob/master/quicksort.cu
+source: https://github.com/GreyVader1993/Cuda-Programs/blob/main/QuickSort.cu
 
 - Merge Sort (MPI)
 
