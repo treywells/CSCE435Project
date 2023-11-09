@@ -28,9 +28,11 @@ For each of the algorithms, we are planning on implementating in both MPI and CU
 
 - Mergesort (MPI):
   	We have implemented the mergesort algorithm that uses MPI to communicate in parallel. It uses recursive calls on consecutively smaller halves of an array before gathering the data from the processes to recombine it.
+  	Given the Grace outage, I have been unable to test whether this code currently works or not. However, you can clearly see in the Git commit history that I have been trying despite this so that I can test it as soon as Grace is back up.
 
 - Mergesort (CUDA):
   	We have implemented the mergesort algorithm that uses CUDA to function on the GPU. It will partition the array data to multiple processes by splitting the array in half iteratively before recombining the sorted portions.
+  	Given the Grace outage, I have been unable to test whether this code currently works or not. However, you can clearly see in the Git commit history that I have been trying despite this so that I can test it as soon as Grace is back up.
 
 ### 2b. Pseudocode for each parallel algorithm
 
