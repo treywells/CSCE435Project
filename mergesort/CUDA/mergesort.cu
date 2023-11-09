@@ -23,43 +23,24 @@ int num_calls = 0;
 
 #define SHARED 8000
 // Device function called locally
-__device__ solve(int **tempList, int left_start, int right_start, int old_left_start, int my_start, int my_end, int left_end, int right_end, int headLoc)
+__device__ void solve(int tempList[2][SHARED / sizeof(int)], int left_start, int right_start, int old_left_start, int my_start, int my_end, int left_end, int right_end, int headLoc, int walkLen)
 {
-	for (int i = 0; i < walkLen; i++)
+	int minRemaining = min(right_end - right_start, left_end - left_start);
+
+	for (int i = 0; i < minRemaining; i++)
 	{
 		if (tempList[current_list][left_start] < tempList[current_list][right_start])
 		{
-			tempList[!current_list][headLoc] = tempList[current_list][left_start]; /*Compare if my left value is smaller than the
-			 left_start++;                                                           right value store it into the !current_list
-			 headLoc++;                                                               row of array tempList*/
-			// Check if l is now empty
-			if (left_start == left_end)
-			{
-				// place the left over elements into the array
-				for (int j = right_start; j < right_end; j++)
-				{
-					tempList[!current_list][headLoc] = tempList[current_list][right_start];
-					right_start++;
-					headLoc++;
-				}
-			}
+			tempList[!current_list][headLoc] = tempList[current_list][left_start];
+			left_start++;
 		}
 		else
 		{
-			tempList[!current_list][headLoc] = tempList[current_list][right_start]; /*Compare if my right value is smaller than the
-			 right_start++;                                                             left value store it into the !current_list
-			 //Check if r is now empty                                                   row of array tempList*/
-			if (right_start == right_end)
-			{
-				// place the left over elements into the array
-				for (int j = left_start; j < left_end; j++)
-				{
-					tempList[!current_list][headLoc] = tempList[current_list][right_start];
-					right_start++;
-					headLoc++;
-				}
-			}
+			tempList[!current_list][headLoc] = tempList[current_list][right_start];
+			right_start++;
 		}
+
+		headLoc++;
 	}
 }
 
@@ -67,24 +48,18 @@ __device__ solve(int **tempList, int left_start, int right_start, int old_left_s
   of the list, and the number of list elements given to each thread.
   Puts the list into sorted order */
 __global__ void Device_Merge(int *d_list, int length, int elementsPerThread)
-{ // Device function
-
-	int my_start, my_end; // indices of each thread's start/end
-
-	// Declare counters requierd for recursive mergesort
-	int left_start, right_start; // Start index of the two lists being merged
+{
+	int my_start, my_end;
+	int left_start, right_start;
 	int old_left_start;
-	int left_end, right_end; // End index of the two lists being merged
-	int headLoc;			 // current location of the write head on the newList
-	short current_list = 0;	 /* Will be used to determine which of two lists is the
-			 most up-to-date */
-
-	// allocate enough shared memory for this block's list...
+	int left_end, right_end;
+	int headLoc;
+	short current_list = 0;
 
 	__shared__ int tempList[2][SHARED / sizeof(int)];
 
-	// Load memory
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
+
 	for (int i = 0; i < elementsPerThread; i++)
 	{
 		if (index + i < length)
@@ -93,21 +68,18 @@ __global__ void Device_Merge(int *d_list, int length, int elementsPerThread)
 		}
 	}
 
-	// Wait until all memory has been loaded
 	__syncthreads();
 
-	// Merge the left and right lists.
 	for (int walkLen = 1; walkLen < length; walkLen *= 2)
 	{
-		// Set up start and end indices.
 		my_start = elementsPerThread * threadIdx.x;
 		my_end = my_start + elementsPerThread;
 		left_start = my_start;
 
 		while (left_start < my_end)
 		{
-			old_left_start = left_start; // left_start will be getting incremented soon.
-			// If this happens, we are done.
+			old_left_start = left_start;
+
 			if (left_start > my_end)
 			{
 				left_start = length;
@@ -121,35 +93,35 @@ __global__ void Device_Merge(int *d_list, int length, int elementsPerThread)
 			}
 
 			right_start = left_end;
+
 			if (right_start > my_end)
 			{
 				right_end = length;
 			}
 
 			right_end = right_start + walkLen;
+
 			if (right_end > my_end)
 			{
 				right_end = length;
 			}
 
-			solve(&tempList, left_start, right_start, old_left_start, my_start, int my_end, left_end, right_end, headLoc);
+			solve(tempList, left_start, right_start, old_left_start, my_start, my_end, left_end, right_end, headLoc, walkLen);
 			left_start = old_left_start + 2 * walkLen;
 			current_list = !current_list;
 		}
 	}
-	// Wait until all thread completes swapping if not race condition will appear
-	// as it might update non sorted value to d_list
+
 	__syncthreads();
 
-	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	for (int i = 0; i < elementsPerThread; i++)
 	{
 		if (index + i < length)
 		{
-			d_list[index + i] = subList[current_list][elementsPerThread * threadIdx.x + i];
+			d_list[index + i] = tempList[current_list][elementsPerThread * threadIdx.x + i];
 		}
 	}
-	// Wait until all memory has been loaded
+
 	__syncthreads();
 
 	return;
@@ -174,12 +146,11 @@ void MergeSort(int *h_list, int len, int threadsPerBlock, int blocks)
 	CALI_MARK_END(cuda_memcpy_host_to_device);
 	CALI_MARK_END(comm_large);
 	CALI_MARK_END(comm);
-	int elementsPerThread = ceil(len / int(threadsPerBlock * blocks));
-
+	int elementsPerThread = ceil(static_cast<float>(NUM_VALS) / (THREADS * BLOCKS));
 	// Launch a Device_Merge kernel on GPU
 	CALI_MARK_BEGIN(comp);
 	CALI_MARK_BEGIN(comp_large);
-	Device_Merge<<<blocks, threadsPerBlock>>>(d_list, len, elementsPerThread);
+	Device_Merge<<<BLOCKS, THREADS>>>(d_list, NUM_VALS, elementsPerThread);
 	CALI_MARK_END(comp);
 	CALI_MARK_END(comp_large);
 
@@ -202,7 +173,7 @@ int main(int argc, char *argv[])
 	cali::ConfigManager mgr;
 	mgr.start();
 	CALI_MARK_BEGIN(main);
-	int *h_list = (int *)malloc(len * sizeof(int));
+	int *h_list = (int *)malloc(NUM_VALS * sizeof(int));
 	CALI_MARK_BEGIN(data_init);
 	for (int i = 0; i < NUM_VALS; i++)
 	{
@@ -213,7 +184,7 @@ int main(int argc, char *argv[])
 	MergeSort(h_list, NUM_VALS, THREADS, BLOCKS);
 
 	CALI_MARK_BEGIN(correctness_check);
-	for (int i = 0; i < NUM_VALS + 1; i++)
+	for (int i = 0; i < NUM_VALS - 1; i++)
 	{
 		if (h_list[i] > h_list[i + 1])
 		{

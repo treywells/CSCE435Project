@@ -26,7 +26,6 @@ const char *comp_final = "comp_final";
 
 int main(int argc, char **argv)
 {
-    CALI_CXX_MARK_FUNCTION;
     CALI_MARK_BEGIN(main);
     /********** Create and populate the array **********/
     int n = atoi(argv[1]);
@@ -52,6 +51,8 @@ int main(int argc, char **argv)
     /********** Divide the array in equal-sized chunks **********/
     int size = n / world_size;
 
+    cali::ConfigManager mgr;
+    mgr.start();
     /********** Send each subarray to each process **********/
     int *sub_array = malloc(size * sizeof(int));
     CALI_MARK_BEGIN(comm);
@@ -138,9 +139,10 @@ int main(int argc, char **argv)
     adiak::value("num_procs", world_size);           // The number of processors (MPI ranks)
     adiak::value("group_num", 18);                   // The number of your group (integer, e.g., 1, 10)
     adiak::value("implementation_source", "Online"); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
-
-    MPI_Finalize();
     CALI_MARK_END(main);
+    mgr.stop();
+    mgr.flush();
+    MPI_Finalize();
 }
 
 /********** Merge Function **********/
