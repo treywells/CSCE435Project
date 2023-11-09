@@ -32,43 +32,258 @@ For example:
 
 - Bubble Sort (MPI)
 	```
-	evenOddSort(array, n):
-		for phase from 0 --> n:
-	        if phase is even:
-	            # pragma omp parallelize
-	            for even values of i from 1 --> n:
-	                if array[i] > array[i + 1]:
-	                    swap()
-	        else:
-	            #pragma omp parallelize
-	            for odd values of i from 1 --> n:
-	                if array[i] > array[i + 1]:
-	                    swap()
+
+	int findPartner(int phase, int rank) {
+		int partner;
+
+		/* if it's an even phase */
+		if (phase % 2 == 0) {
+			/* if we are an even process */
+			if (rank % 2 == 0) {
+				partner = rank + 1;
+			} else {
+				partner = rank - 1;
+			}
+		} else {
+			/* it's an odd phase - do the opposite */
+			if (rank % 2 == 0) {
+				partner = rank - 1;
+			} else {
+				partner = rank + 1;
+			}
+		}
+		return partner;
+	}
+
+	void parallel_sort(int *data, int rank, int count_processes, unsigned long data_size)
+	{
+
+		CALI_MARK_BEGIN(comp);
+		CALI_MARK_BEGIN(comp_large);
+
+		const unsigned long concat_data_size = data_size * 2;
+
+		auto *other      = new int[data_size];
+		auto *concatData = new int[concat_data_size];
+
+		for (int i=0; i<count_processes; i++)
+		{
+			int partner = findPartner(i, rank);
+			if (partner < 0 || partner >= count_processes)
+			continue;
+
+			CALI_MARK_END(comp_large);
+			CALI_MARK_END(comp);
+
+			CALI_MARK_BEGIN(comm);
+			CALI_MARK_BEGIN(comm_large);
+
+			if (rank % 2 == 0) {
+				CALI_MARK_BEGIN(MPI_Send);
+				MPI_Send(data, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD);
+				CALI_MARK_END(MPI_Send);
+
+				CALI_MARK_BEGIN(MPI_Recv);
+				MPI_Recv(other, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				CALI_MARK_END(MPI_Recv);
+			} else {
+				CALI_MARK_BEGIN(MPI_Recv);
+				MPI_Recv(other, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				CALI_MARK_END(MPI_Recv);
+
+				CALI_MARK_BEGIN(MPI_Send);
+				MPI_Send(data, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD);
+				CALI_MARK_END(MPI_Send);
+			}
+
+			CALI_MARK_END(comm_large);
+			CALI_MARK_END(comm);
+
+			CALI_MARK_BEGIN(comp);
+			CALI_MARK_BEGIN(comp_large);
+
+			merge(data,  data  + data_size,
+				other, other + data_size,
+				concatData);
+			qsort(concatData, concat_data_size, sizeof(int), compare);
+
+			auto posHalfConcatData = concatData + data_size;
+			if (rank < partner)
+				copy(concatData, posHalfConcatData, data);
+			else
+				copy(posHalfConcatData, concatData + concat_data_size, data);
+		}
+
+		CALI_MARK_END(comp);
+		CALI_MARK_END(comp_large);
+
+	}
+
+	int main(int argc, char** argv)
+	{
+		MPI_Init(&argc, &argv);
+
+		CALI_MARK_BEGIN(main_function);
+
+		CALI_MARK_BEGIN(data_init);
+		int status = fill_vector_with_numbers(data, rank, count_processes, localSize);
+		CALI_MARK_END(data_init);
+
+		parallel_sort(data, rank, count_processes, localSize);
+
+		CALI_MARK_BEGIN(comm);
+		CALI_MARK_BEGIN(comm_large);
+		CALI_MARK_BEGIN(MPI_Gather);
+
+		// Gather data from all processes onto rank 0
+		MPI_Gather(data, localSize, MPI_INT, gathered_data, localSize, MPI_INT, 0, MPI_COMM_WORLD);
+
+		CALI_MARK_END(MPI_Gather);
+		CALI_MARK_END(comm_large);
+		CALI_MARK_END(comm);
+		
+		// Print the sorted data on rank 0
+		if (rank == 0) {
+			CALI_MARK_BEGIN(correctness_check);
+			if gathered_data is sorted:
+				display message to output
+
+			CALI_MARK_END(correctness_check);
+		}
+
+		CALI_MARK_END(main_function);
+
+		MPI_Finalize();
+	}
 
 	```
-    Source: https://people.cs.pitt.edu/~bmills/docs/teaching/cs1645/lecture_par_sort.pdf
+    Source: https://github.com/erenalbayrak/Odd-Even-Sort-mit-MPI/blob/master/implementation/c%2B%2B/OddEvenSort.cpp
 
 - Bubble Sort (CUDA)
 	```
-    __global__ evenOddSort(array, length):
-        while unsorted:
-            if threadID is even:
-                if array[ID] > array[ID + 1]:
-                    swap()
-            
-            __syncthreads()
 
-            if threadID is odd:
-                if array[ID] > array[ID + 1]:
-                    swap()
+	__global__ void bubbleSortDeviceParallel(int *array, int offSet, int THREADS, int BLOCKS)
+	{
 
-            __syncthreads()
+		int index = blockIdx.x * blockDim.x + threadIdx.x;
+		int indexPerBlock = threadIdx.x;
+		int temp;
 
-    main():
-        evenOddSort<<< blocks, threads >>>(array, length)
+		if (index  < THREADS* BLOCKS) {
+
+			// FIRST STEP
+			if (offSet == 0) {
+
+				// DO THREAD SORTING IN CORRESPONDING BLOCK 
+				for (int j = 0; j < THREADS / 2; j++) {
+
+					for (int i = 0; i < THREADS * 2 - 1 - indexPerBlock * 2; i++) {
+
+						if (array[index * 2 + i] > array[index * 2 + 1 + i]) {
+							temp = array[index * 2 + 1 + i];
+							array[index * 2 + 1 + i] = array[index * 2 + i];
+							array[index * 2 + i] = temp;
+						}
+					}
+					__syncthreads();
+				}
+			}
+			// ALL OTHER STEPS, INDEX/THREADS/BLOCKS SHIFTED FOR int offSet
+			// LAST BLOCK SKIPPED
+			else {
+				if (blockIdx.x != BLOCKS - 1) {
+					for (int j = 0; j < THREADS / 2; j++) {
+						for (int i = offSet; i < THREADS * 2 - 1 + offSet - indexPerBlock * 2; i++) {
+
+							if (array[index * 2 + i] > array[index * 2 + 1 + i]) {
+								temp = array[index * 2 + 1 + i];
+								array[index * 2 + 1 + i] = array[index * 2 + i];
+								array[index * 2 + i] = temp;
+							}
+
+						}
+						__syncthreads();
+					}
+				}
+			}
+		}
+
+	}
+
+	int main(int argc, char* argv[])
+	{
+		CALI_MARK_BEGIN(main_function);
+
+		srand(time(NULL));
+		THREADS = atoi(argv[1]);
+		NUM_VALS = atoi(argv[2]);
+		size_t size = NUM_VALS * sizeof(int);
+		BLOCKS = NUM_VALS / THREADS;
+		int *h_array;
+		int *d_array;
+		int offSet;
+
+		h_array = new int[NUM_VALS];
+
+		if (cudaMalloc(&d_array, size) != cudaSuccess)
+		{
+			cout << "D_ARRAY ALLOCATING NOT WORKING!" << endl;
+			return 0;
+		}
+
+		CALI_MARK_BEGIN(data_init);
+
+		// Generate the data in parallel
+		// Generate in reverse sorted order
+		Generate data in parallel;
+
+		cudaDeviceSynchronize();
+
+		CALI_MARK_END(data_init);
+
+		CALI_MARK_BEGIN(comp);
+		CALI_MARK_BEGIN(comp_large);
+
+
+		do {
+
+			for (int i = 0; i < THREADS * 2; i++) {
+				offSet = i;
+				// POSSIBLE CHANGE: if offset != 0 USE bubbleSortDeviceParallel << < BLOCKS-1, THREADS >> > (d_array, offSet);
+				bubbleSortDeviceParallel << < BLOCKS, THREADS >> > (d_array, offSet, THREADS, BLOCKS);
+			}
+
+			BLOCKS--;
+		} while (BLOCKS > 0);
+
+		cudaDeviceSynchronize();
+
+		CALI_MARK_END(comp_large);
+		CALI_MARK_END(comp);
+
+		CALI_MARK_BEGIN(comm);
+		CALI_MARK_BEGIN(comm_large);
+		CALI_MARK_BEGIN(memcpyDeviceToHost);
+
+		cudaMemcpy(h_array, d_array, size, cudaMemcpyDeviceToHost);
+
+		CALI_MARK_END(memcpyDeviceToHost);
+		CALI_MARK_END(comm_large);
+		CALI_MARK_END(comm);
+
+		CALI_MARK_BEGIN(correctness_check);
+
+		if h_array is sorted:
+			display message to output
+
+		CALI_MARK_END(correctness_check);
+
+		CALI_MARK_END(main_function);
+
+	}
  	```
 
-    Source: https://www.cs.emory.edu/~cheung/Courses/355/Syllabus/94-CUDA/SLIDES/s19.html
+    Source: https://github.com/domkris/CUDA-Bubble-Sort/blob/master/CUDABubbleSort/kernel.cu
 
 - Quick Sort (MPI)
 	```  
