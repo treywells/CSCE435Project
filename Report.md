@@ -1,6 +1,6 @@
 # CSCE 435 Group project
 
-## 0. Group number: 
+## 0. Group number: 18
 
 ## 1. Group members:
 1. Trey Wells
@@ -26,11 +26,19 @@ For each of the algorithms, we are planning on implementating in both MPI and CU
 - Quicksort (CUDA):
 	We have implemented the quicksort algorithm using CUDA on the GPU to communicate and function in parralell. It uses an iterative approach to call the kernal which will create partitions of the data for multiple proccess to use until there are not anymore proccesses. It combines the sorted data afterwards.
 
+- Mergesort (MPI):
+  	We have implemented the mergesort algorithm that uses MPI to communicate in parallel. It uses recursive calls on consecutively smaller halves of an array before gathering the data from the processes to recombine it.
+  	Given the Grace outage, I have been unable to test whether this code currently works or not. However, you can clearly see in the Git commit history that I have been trying despite this so that I can test it as soon as Grace is back up.
+
+- Mergesort (CUDA):
+  	We have implemented the mergesort algorithm that uses CUDA to function on the GPU. It will partition the array data to multiple processes by splitting the array in half iteratively before recombining the sorted portions.
+  	Given the Grace outage, I have been unable to test whether this code currently works or not. However, you can clearly see in the Git commit history that I have been trying despite this so that I can test it as soon as Grace is back up.
+
 ### 2b. Pseudocode for each parallel algorithm
 
 For example:
 
-- Bubble Sort (MPI)
+**- Bubble Sort (MPI)**
 	```
 
 	int findPartner(int phase, int rank) {
@@ -159,7 +167,7 @@ For example:
 	```
     Source: https://github.com/erenalbayrak/Odd-Even-Sort-mit-MPI/blob/master/implementation/c%2B%2B/OddEvenSort.cpp
 
-- Bubble Sort (CUDA)
+**- Bubble Sort (CUDA)**
 	```
 
 	__global__ void bubbleSortDeviceParallel(int *array, int offSet, int THREADS, int BLOCKS)
@@ -285,7 +293,7 @@ For example:
 
     Source: https://github.com/domkris/CUDA-Bubble-Sort/blob/master/CUDABubbleSort/kernel.cu
 
-- Quick Sort (MPI)
+**- Quick Sort (MPI)**
 	```  
 	#include "mpi.h"
     #include<stdio.h>
@@ -474,7 +482,7 @@ For example:
  
 source: https://github.com/triasamo1/Quicksort-Parallel-MPI/blob/master/quicksort_mpi.c
 
-- Quick Sort (CUDA)
+**- Quick Sort (CUDA)**
   
 	```   
 	#include<stdio.h>
@@ -565,130 +573,204 @@ source: https://github.com/triasamo1/Quicksort-Parallel-MPI/blob/master/quicksor
  
 source: https://github.com/GreyVader1993/Cuda-Programs/blob/main/QuickSort.cu
 
-- Merge Sort (MPI)
+**- Merge Sort (MPI)**
 
 	```
-	void merge(X, n, tmp):
-        i = 0
-        j = n / 2
-        ti = 0
-        while i < n / 2 and j < n:
-            if X[i] < X[j]:
-                tmp[ti] = X[i]
-                ti = ti + 1
-                i = i + 1
-             else:
-                tmp[ti] = X[j]
-                ti = ti + 1
-                j = j + 1
-      
-        while i < n / 2:
-            tmp[ti] = X[i]
-            ti = ti + 1
-            i = i + 1
-      
-        while j < n:
-            tmp[ti] = X[j]
-            ti = ti + 1
-            j = j + 1
-        copy(tmp, X, n)
-	end merge
-  
-
-    void mergesort(X, n, tmp):
-        if n < 2:
-            return
-        //Sort the first half
-        #pragma omp task (X, n, tmp)
-        mergesort(X, n / 2, tmp)
-        //Sort the second half
-        #pragma omp task (X, n, tmp)
-		mergesort(X + (n / 2), n - (n / 2), tmp)
-        //wait for both tasks to complete
-        #pragma omp taskwait
-        //Merge the sorted halves
-        merge(X, n, tmp)
-    end mergesort
+	**function merge**(a, b, l, m, r):
+	    h = l
+	    i = l
+	    j = m + 1
+	
+	    while (h <= m) and (j <= r):
+	        if a[h] <= a[j]:
+	            b[i] = a[h]
+	            h++
+	        else:
+	            b[i] = a[j]
+	            j++
+	        i++
+	
+	    if m < h:
+	        for k = j to r:
+	            b[i] = a[k]
+	            i++
+	    else:
+	        for k = h to m:
+	            b[i] = a[k]
+	            i++
+	
+	    for k = l to r:
+	        a[k] = b[k]
+	
+	
+	**function mergeSort**(a, b, l, r):
+	    if l < r:
+	        m = (l + r) / 2
+	
+	        mergeSort(a, b, l, m)
+	        mergeSort(a, b, (m + 1), r)
+	        merge(a, b, l, m, r)
+	
+	
+	**function main**(argc, argv):
+	    n = atoi(argv[1])
+	    original_array = malloc(n * sizeof(int))
+	
+	    // Populate the array with random values
+	    for c = 0 to n - 1:
+	        original_array[c] = rand() % n
+	
+	    // Initialize MPI
+	    MPI_INIT(&argc, &argv)
+	    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank)
+	    MPI_Comm_size(MPI_COMM_WORLD, &world_size)
+	
+	    // Divide the array into equal-sized chunks
+	    size = n / world_size
+	
+	    // Scatter the subarrays to each process
+	    sub_array = malloc(size * sizeof(int))
+	    MPI_Scatter(original_array, size, MPI_INT, sub_array, size, MPI_INT, 0, MPI_COMM_WORLD)
+	
+	    // Perform mergesort on each process
+	    tmp_array = malloc(size * sizeof(int))
+	    mergeSort(sub_array, tmp_array, 0, (size - 1))
+	
+	    // Gather the sorted subarrays into one
+	    sorted = NULL
+	    if world_rank == 0:
+	        sorted = malloc(n * sizeof(int))
+	
+	    MPI_Gather(sub_array, size, MPI_INT, sorted, size, MPI_INT, 0, MPI_COMM_WORLD)
+	
+	    // Make the final mergesort call on the root process
+	    if world_rank == 0:
+	        other_array = malloc(n * sizeof(int))
+	        mergeSort(sorted, other_array, 0, (n - 1))
+	
+	        // Check sorted array
+	        for c = 0 to n - 1:
+	            if sorted[c] > sorted[c + 1]:
+	                print("Sort Failed")
+	                break
+	
+	        print("Sort Successful")
+	
+	
+	    // Finalize MPI
+	    MPI_Barrier(MPI_COMM_WORLD)
+	    MPI_Finalize()
 
 	```
 
-    Source: https://avcourt.github.io/tiny-cluster/2019/03/08/merge_sort.html
+    Source: https://github.com/racorretjer/Parallel-Merge-Sort-with-MPI/blob/master/merge-mpi.c
   
 
-- Merge Sort (CUDA)
+**- Merge Sort (CUDA)**
   
-        void Device_Merge(d_list, length, elementsPerThread):
-            index = blockIdx.x * blockDim.x + threadIdx.x
-            for i in 0 to elementsPerThread - 1:
-                if (index + i < length):
-                    tempList[current_list][elementsPerThread * threadIdx.x + i] = d_list[index + i]
-            synchronize_threads()
-            for walkLen = 1 to length - 1 by walkLen *= 2:
-                my_start = elementsPerThread * threadIdx.x
-                my_end = my_start + elementsPerThread
-                left_start = my_start
-                while left_start < my_end:
-                    old_left_start = left_start
-                    if left_start > my_end:
-                        left_start = len
-                        break
-                    left_end = left_start + walkLen
-                    if left_end > my_end:
-                        left_end = len
-                    right_start = left_end
-                    if right_start > my_end:
-                        right_end = len
-                    right_end = right_start + walkLen
-                    if right_end > my_end:
-                        right_end = len
-                    solve(tempList, left_start, right_start, old_left_start, my_start, my_end, left_end, right_end, headLoc)
-                    left_start = old_left_start + 2 * walkLen
-                    current_list = not current_list
-            synchronize_threads()
-            index = blockIdx.x * blockDim.x + threadIdx.x
-            for i in 0 to elementsPerThread - 1:
-                if (index + i < length):
-                    d_list[index + i] = tempList[current_list][elementsPerThread * threadIdx.x + i]
-            synchronize_threads()
-            return
-        end Device_Merge
-      
-        void MergeSort(h_list, len, threadsPerBlock, blocks):
-            d_list
-            allocate_device_memory(d_list, len * sizeof(float))
-            copy_input_to_device(d_list, h_list, len * sizeof(float))
-            elementsPerThread = ceil(len / float(threadsPerBlock * blocks))
-            Device_Merge<<<blocks, threadsPerBlock>>>(d_list, len, elementsPerThread)
-            copy_output_to_host(h_list, d_list, len * sizeof(float))
-            free_device_memory(d_list)
-        end MergeSort
-      
-        function solve(tempList, left_start, right_start, old_left_start, my_start, my_end, left_end, right_end, headLoc):
-            for i = 0 to walkLen - 1:
-                if tempList[current_list][left_start] < tempList[current_list][right_start]:
-                    tempList[not current_list][headLoc] = tempList[current_list][left_start]
-                    left_start = left_start + 1
-                    headLoc = headLoc + 1
-                    if left_start == left_end:
-                        for j = right_start to right_end - 1:
-                            tempList[not current_list][headLoc] = tempList[current_list][right_start]
-                            right_start = right_start + 1
-                            headLoc = headLoc + 1
-                else:
-                    tempList[not current_list][headLoc] = tempList[current_list][right_start]
-                    right_start = right_start + 1
-                    if right_start == right_end:
-                        for j = left_start to left_end - 1:
-                            tempList[not current_list][headLoc] = tempList[current_list][right_start]
-                            right_start = right_start + 1
-                            headLoc = headLoc + 1
-        end solve
+        function solve(tempList, left_start, right_start, old_left_start, my_start, my_end, left_end, right_end, headLoc, walkLen):
+    minRemaining = min(right_end - right_start, left_end - left_start)
+
+    for i = 0 to minRemaining - 1:
+        if tempList[current_list][left_start] < tempList[current_list][right_start]:
+            tempList[!current_list][headLoc] = tempList[current_list][left_start]
+            left_start++
+        else:
+            tempList[!current_list][headLoc] = tempList[current_list][right_start]
+            right_start++
+
+        headLoc++
+
+function Device_Merge(d_list, length, elementsPerThread):
+    my_start, my_end, left_start, right_start, old_left_start, left_end, right_end, headLoc = 0, 0, 0, 0, 0, 0, 0, 0
+    current_list = 0
+
+    shared_memory tempList[2][SHARED / sizeof(int)]
+
+    index = blockIdx.x * blockDim.x + threadIdx.x
+
+    for i = 0 to elementsPerThread - 1:
+        if index + i < length:
+            tempList[current_list][elementsPerThread * threadIdx.x + i] = d_list[index + i]
+
+    synchronize_threads()
+
+    for walkLen = 1 to length - 1 step 2:
+        my_start = elementsPerThread * threadIdx.x
+        my_end = my_start + elementsPerThread
+        left_start = my_start
+
+        while left_start < my_end:
+            old_left_start = left_start
+
+            if left_start > my_end:
+                left_start = length
+                break
+
+            left_end = left_start + walkLen
+            if left_end > my_end:
+                left_end = length
+
+            right_start = left_end
+
+            if right_start > my_end:
+                right_end = length
+
+            right_end = right_start + walkLen
+
+            if right_end > my_end:
+                right_end = length
+
+            solve(tempList, left_start, right_start, old_left_start, my_start, my_end, left_end, right_end, headLoc, walkLen)
+            left_start = old_left_start + 2 * walkLen
+            current_list = !current_list
+
+    synchronize_threads()
+
+    for i = 0 to elementsPerThread - 1:
+        if index + i < length:
+            d_list[index + i] = tempList[current_list][elementsPerThread * threadIdx.x + i]
+
+    synchronize_threads()
+
+function MergeSort(h_list, len, threadsPerBlock, blocks):
+    d_list = allocate_device_memory(len)
+
+    copy_host_to_device(h_list, d_list, len)
+
+    elementsPerThread = ceil(static_cast<float>(NUM_VALS) / (threadsPerBlock * blocks))
+
+    Device_Merge<<<blocks, threadsPerBlock>>>(d_list, NUM_VALS, elementsPerThread)
+
+    copy_device_to_host(d_list, h_list, len)
+
+    free_device_memory(d_list)
+
+function main(argc, argv):
+    THREADS = atoi(argv[1])
+    NUM_VALS = atoi(argv[2])
+    BLOCKS = NUM_VALS / THREADS
+
+    initialize_cali_ConfigManager()
+
+    h_list = allocate_host_memory(NUM_VALS)
+
+    for i = 0 to NUM_VALS - 1:
+        h_list[i] = random() % NUM_VALS
+
+    MergeSort(h_list, NUM_VALS, THREADS, BLOCKS)
+
+    check_correctness(h_list, NUM_VALS)
+
+    adiak_setup_and_logging()
+
+    return 0
 
     
-Source: https://pushkar2196.wordpress.com/2017/04/19/mergesort-cuda-implementation/
+Source: https://github.com/pushkarkrp/Parallel-Computing/blob/master/BLOG6/merge.cu
 
 
-- Insertion Sort (MPI)
+**- Insertion Sort (MPI)**
 ```
 	int main ( int argc, char *argv[] )
 	{
@@ -785,7 +867,7 @@ Source: https://pushkar2196.wordpress.com/2017/04/19/mergesort-cuda-implementati
 ```
 Source: https://homepages.math.uic.edu/~jan/mcs572/pipelinedsort.pdf
 
-- Insertion Sort (CUDA)
+**- Insertion Sort (CUDA)**
 ```
 	#include <stdio.h>
 	#include <stdlib.h>
