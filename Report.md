@@ -21,10 +21,16 @@ For our algorithms, we plan on implementing various sorting algorithms. The four
 For each of the algorithms, we are planning on implementating in both MPI and CUDA so that we can compare the differences in CPU vs. GPU parallelization. Not only will we be comparing the differences in CPU and GPU speed but we will also be testing the differences in the algorithms on various types of inputs. For example, we might run each algorithm on a completely random input, then on a partially sorted one, then on a completely sorted one. 
 
 - Quicksort (MPI):
-	We have implemented the quicksort algorithm that uses MPI to communicate and function in parralell. It uses a recursive tree method in order to disperse segments to multiple proccsess to sort. It will combine the arrays after sorted.
+	We have implemented the quicksort algorithm that uses MPI to communicate and function in parallel. It uses a recursive tree method in order to disperse segments to multiple proccsess to sort. It will combine the arrays after sorted.
 
 - Quicksort (CUDA):
-	We have implemented the quicksort algorithm using CUDA on the GPU to communicate and function in parralell. It uses an iterative approach to call the kernal which will create partitions of the data for multiple proccess to use until there are not anymore proccesses. It combines the sorted data afterwards.
+	We have implemented the quicksort algorithm using CUDA on the GPU to communicate and function in parallel. It uses an iterative approach to call the kernal which will create partitions of the data for multiple proccess to use until there are not anymore proccesses. It combines the sorted data afterwards.
+
+- BubbleSort (MPI):
+	We have implemented the buble sort algorithm using MPI to communiate and function parallel. It is implemented using an even-odd transposition where each processor is responsible for a range of values in the data and then after sorting its personal data, it will communicate and trade data with the processors that are "next" to it. After going through all the phases, it gathers all the data into the root rank. 
+
+- BubbleSort (CUDA):
+	We have implemented the bubble sort algorithm using CUDA on the GPU to communicate and function in parallel. This algorithm functions similar to an actual bubble sort where each thread is given a range of values in the data to perform a bubble sort on. Then we call the sorting function again with one less block so that each thread is sorting more and more values till we reach the very end. 
 
 - Mergesort (MPI):
   	We have implemented the mergesort algorithm that uses MPI to communicate in parallel. It uses recursive calls on consecutively smaller halves of an array before gathering the data from the processes to recombine it.
