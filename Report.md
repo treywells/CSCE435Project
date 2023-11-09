@@ -45,7 +45,7 @@ For each of the algorithms, we are planning on implementating in both MPI and CU
   	Given the Grace outage, I have been unable to test whether this code currently works or not. However, you can clearly see in the Git commit history that I have been trying despite this so that I can test it as soon as Grace is back up.
 
 - Insertionsort (CUDA):
-  	We have implemented the mergesort algorithm that uses CUDA to function on the GPU. It will transfer elements in the array one at a time to the right position.
+  	We have implemented the insertionsort algorithm that uses CUDA to function on the GPU. It will transfer elements in the array one at a time to the right position.
   	Given the Grace outage, I have been unable to test whether this code currently works or not. However, you can clearly see in the Git commit history that I have been trying despite this so that I can test it as soon as Grace is back up.
 
 ### 2b. Pseudocode for each parallel algorithm
