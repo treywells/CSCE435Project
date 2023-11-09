@@ -24,6 +24,7 @@ const char* comm_large = "comm_large";
 const char* comp = "comp";
 const char* comp_large = "comp_large";
 const char* correctness_check = "correctness_check";
+const char* memcpyDeviceToHost = "memcpyDeviceToHost";
 
 
 /*
@@ -168,9 +169,11 @@ int main(int argc, char* argv[])
 
     CALI_MARK_BEGIN(comm);
     CALI_MARK_BEGIN(comm_large);
+    CALI_MARK_BEGIN(memcpyDeviceToHost);
 
     cudaMemcpy(h_array, d_array, size, cudaMemcpyDeviceToHost);
 
+    CALI_MARK_END(memcpyDeviceToHost);
     CALI_MARK_END(comm_large);
     CALI_MARK_END(comm);
 

@@ -17,6 +17,8 @@ const char* comm_large = "comm_large";
 const char* comp = "comp";
 const char* comp_large = "comp_large";
 const char* correctness_check = "correctness_check";
+const char* MPI_Send = "MPI_Send";
+const char* MPI_Recv = "MPI_Recv";
 
 /*
 Source: https://github.com/erenalbayrak/Odd-Even-Sort-mit-MPI/blob/master/implementation/c%2B%2B/OddEvenSort.cpp
@@ -86,11 +88,21 @@ void parallel_sort(int *data, int rank, int count_processes, unsigned long data_
     	CALI_MARK_BEGIN(comm_large);
 
         if (rank % 2 == 0) {
+            CALI_MARK_BEGIN(MPI_Send);
             MPI_Send(data, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD);
+            CALI_MARK_END(MPI_Send);
+
+            CALI_MARK_BEGIN(MPI_Recv);
             MPI_Recv(other, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            CALI_MARK_END(MPI_Recv);
         } else {
+            CALI_MARK_BEGIN(MPI_Recv);
             MPI_Recv(other, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            CALI_MARK_END(MPI_Recv);
+
+            CALI_MARK_BEGIN(MPI_Send);
             MPI_Send(data, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD);
+            CALI_MARK_END(MPI_Send);
         }
 
 		CALI_MARK_END(comm_large);
