@@ -308,7 +308,7 @@ For example:
     Source: https://github.com/domkris/CUDA-Bubble-Sort/blob/master/CUDABubbleSort/kernel.cu
 
 **- Quick Sort (MPI)**
-	```  
+```  
 	#include "mpi.h"
 	#include <stdio.h>
 	#include <stdlib.h>
