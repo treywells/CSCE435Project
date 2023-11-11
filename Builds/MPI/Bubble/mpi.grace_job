@@ -24,4 +24,4 @@ module load CMake/3.12.1
 
 CALI_CONFIG="spot(output=p${processes}-s${input_size}.cali, \
     time.variance)" \
-mpirun -np $processes ./MPI_quicksort $input_size
+mpirun -np $processes ./bubble $input_size
