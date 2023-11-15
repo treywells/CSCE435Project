@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
@@ -94,9 +95,7 @@ int quicksort_recursive(int *arr, int arrSize, int currProcRank, int maxRank, in
     // If no Cluster is available, sort sequentially by yourself and return
     if (shareProc > maxRank) {
         MPI_Barrier(MPI_COMM_WORLD);
-        CALI_MARK_BEGIN("quicksort");
         quicksort(arr, 0, arrSize - 1);
-        CALI_MARK_END("quicksort");
         return 0;
     }
     // Divide the array into two parts with the pivot in between
@@ -106,9 +105,9 @@ int quicksort_recursive(int *arr, int arrSize, int currProcRank, int maxRank, in
     
     
     // CALI_MARK_BEGIN("comp_small");
-    CALI_MARK_BEGIN("partition");
+    
     pivotIndex = hoare_partition(arr, j, arrSize - 1);
-    CALI_MARK_END("partition");
+    
     // CALI_MARK_END("comp_small");
     
     
@@ -132,7 +131,39 @@ int quicksort_recursive(int *arr, int arrSize, int currProcRank, int maxRank, in
 void data_init(int *arr, int size) {
     int j;
     for (j = 0; j < size; ++j) {
-        arr[j] = (int) rand() % 1000;
+        arr[j] = (int) rand() % 10000;
+    }
+}
+
+
+// Function to initialize the data (generate random, reverse sorted, sorted, or perturbed input array)
+void parallel_data_init(int *arr, int arr_size, string inputType, int rank, int size) {
+    int j, chunk_size;
+
+    // Calculate the chunk size for each process
+    chunk_size = arr_size / size;
+
+    if (inputType == "Random") {
+        for (j = rank * chunk_size; j < (rank + 1) * chunk_size; ++j) {
+            arr[j] = rand() % 1000;
+        }
+    } else if (inputType == "ReverseSorted") {
+        for (j = rank * chunk_size; j < (rank + 1) * chunk_size; ++j) {
+            arr[j] = arr_size - j;
+        }
+    } else if (inputType == "Sorted") {
+        for (j = rank * chunk_size; j < (rank + 1) * chunk_size; ++j) {
+            arr[j] = j;
+        }
+    } else if (inputType == "Perturbed") {
+        for (j = rank * chunk_size; j < (rank + 1) * chunk_size; ++j) {
+            arr[j] = (j % 100 == 0) ? (rand() % 1000) : j;
+        }
+    } else {
+        // Handle unsupported input type or default to random
+        for (j = rank * chunk_size; j < (rank + 1) * chunk_size; ++j) {
+            arr[j] = rand() % 1000;
+        }
     }
 }
 
@@ -150,12 +181,13 @@ bool correctness_check(int *arr, int size) {
 int main(int argc, char *argv[]) {
     CALI_MARK_BEGIN("main");
     
-    if (argc != 2) {
-        printf("Usage: %s <array_size>\n", argv[0]);
+    if (argc != 3) {
+        printf("Usage: %s <array_size> <input_type>\n", argv[0]);
         return 1;
     }
 
     int array_size = atoi(argv[1]);
+    string inputType = argv[2];
 
     int unsorted_array[array_size];
     int size, rank;
@@ -169,16 +201,67 @@ int main(int argc, char *argv[]) {
 
     cali::ConfigManager mgr;
     mgr.start();
+    // if (rank == 0) {
+    //     // --- RANDOM ARRAY GENERATION ---
+    //     printf("Creating a Random List of %d elements\n", array_size);
+    //     CALI_MARK_BEGIN("data_init");
+    //     data_init(unsorted_array, array_size);
+    //     CALI_MARK_END("data_init");
+    //     printf("Created\n");
+    // }
+     // --- PARALLEL RANDOM ARRAY GENERATION ---
+    CALI_MARK_BEGIN("data_init");
+    parallel_data_init(unsorted_array, array_size, inputType, rank, size);
+    CALI_MARK_END("data_init");
 
+    //  // Print the array before sorting
+    // if (rank == 0) {
+    //     printf("Array Before Sorting:\n");
+    //     for (int i = 0; i < array_size; ++i) {
+    //         printf("%d ", unsorted_array[i]);
+    //     }
+    //     printf("\n");
+    // }
+
+    // // Use separate arrays for sending and receiving in MPI_Gather
+    // int* send_buffer = unsorted_array + rank * (array_size / size);
+
+    // CALI_MARK_BEGIN("comm");
+    // CALI_MARK_BEGIN("MPI_Gather");
+    // MPI_Gather(send_buffer, array_size / size, MPI_INT,
+    //         unsorted_array, array_size / size, MPI_INT, 0, MPI_COMM_WORLD);
+    // CALI_MARK_END("MPI_Gather");
+    // CALI_MARK_END("comm");
+
+    // Allocate a temporary array for gathering data at the root
+    int* gathered_array = NULL;
     if (rank == 0) {
-        // --- RANDOM ARRAY GENERATION ---
-        printf("Creating a Random List of %d elements\n", array_size);
-        CALI_MARK_BEGIN("data_init");
-        data_init(unsorted_array, array_size);
-        CALI_MARK_END("data_init");
-        printf("Created\n");
+        gathered_array = (int*)malloc(array_size * sizeof(int));
+    }
+    CALI_MARK_BEGIN("comm");
+    CALI_MARK_BEGIN("MPI_Gather");
+    // Gather the generated data from all processes
+    MPI_Gather(unsorted_array + rank * (array_size / size), array_size / size, MPI_INT,
+            gathered_array, array_size / size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    CALI_MARK_END("MPI_Gather");
+    CALI_MARK_END("comm");
+    // If root, copy the gathered data back to the original array
+    if (rank == 0) {
+        memcpy(unsorted_array, gathered_array, array_size * sizeof(int));
+        free(gathered_array); // Free the temporary array
     }
 
+
+
+    // // Print the array after gathering but before sorting
+    // if (rank == 0) {
+    //     printf("Array After Gathering (Before Sorting):\n");
+    //     for (int i = 0; i < array_size; ++i) {
+    //         printf("%d ", unsorted_array[i]);
+    //     }
+    //     printf("\n");
+    // }
     // Calculate in which layer of the tree each Cluster belongs
     int rankPower = 0;
     while (pow(2, rankPower) <= rank) {
@@ -198,9 +281,9 @@ int main(int argc, char *argv[]) {
         // always runs recursively and keeps the left bigger half
         CALI_MARK_BEGIN("comp");
         CALI_MARK_BEGIN("comp_large");
-        CALI_MARK_BEGIN("recursive_proccess_0");
+        
         quicksort_recursive(unsorted_array, array_size, rank, size - 1, rankPower);
-        CALI_MARK_END("recursive_proccess_0");
+        
         CALI_MARK_END("comp_large");
         CALI_MARK_END("comp");
     } else {
@@ -209,40 +292,40 @@ int main(int argc, char *argv[]) {
         MPI_Status status;
         int subarray_size;
         CALI_MARK_BEGIN("comm");
-        CALI_MARK_BEGIN("MPI_probe");
+        CALI_MARK_BEGIN("MPI_Probe");
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        CALI_MARK_END("MPI_probe");
+        CALI_MARK_END("MPI_Probe");
 
         // Capturing the size of the array to receive
         CALI_MARK_BEGIN("comm_small");
-        CALI_MARK_BEGIN("MPI_get_count");
+        CALI_MARK_BEGIN("MPI_Get_Count");
         MPI_Get_count(&status, MPI_INT, &subarray_size);
-        CALI_MARK_END("MPI_get_count");
+        CALI_MARK_END("MPI_Get_Count");
         CALI_MARK_END("comm_small");
 
         int source_process = status.MPI_SOURCE;
         int subarray[subarray_size];
 
         CALI_MARK_BEGIN("comm_large");
-        CALI_MARK_BEGIN("MPI_recv_>0");
+        CALI_MARK_BEGIN("MPI_Recv");
         MPI_Recv(subarray, subarray_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        CALI_MARK_END("MPI_recv_>0");
+        CALI_MARK_END("MPI_Recv");
         CALI_MARK_END("comm_large");
         CALI_MARK_END("comm");
 
         CALI_MARK_BEGIN("comp");
         CALI_MARK_BEGIN("comp_large");
-        CALI_MARK_BEGIN("recursive>0");
+        
         quicksort_recursive(subarray, subarray_size, rank, size - 1, rankPower);
-        CALI_MARK_END("recursive>0");
+        
         CALI_MARK_END("comp_large");
         CALI_MARK_END("comp");
 
         CALI_MARK_BEGIN("comm");
         CALI_MARK_BEGIN("comm_large");
-        CALI_MARK_BEGIN("MPI_Send>0");
+        CALI_MARK_BEGIN("MPI_Send");
         MPI_Send(subarray, subarray_size, MPI_INT, source_process, 0, MPI_COMM_WORLD);
-        CALI_MARK_END("MPI_Send>0");
+        CALI_MARK_END("MPI_Send");
         CALI_MARK_END("comm_large");
         CALI_MARK_END("comm");
     };
@@ -261,13 +344,20 @@ int main(int argc, char *argv[]) {
         } else {
             printf("Error: Not sorted correctly\n");
         }
+
+        // Print the array after sorting
+        // printf("Array After Sorting:\n");
+        // for (int i = 0; i < array_size; ++i) {
+        //     printf("%d ", unsorted_array[i]);
+        // }
+        // printf("\n");
     }
     string algorithm = "QuickSort";
     string programmingModel = "MPI";
     string datatype = "int";
     int sizeOfDatatype = sizeof(int);
     int inputSize = array_size;
-    string inputType = "Random";
+    // string inputType = "Random";
     int num_procs = size;
     string group_number = "18";
     string implementation_source = "Online";
