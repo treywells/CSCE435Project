@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cstring>
+#include <cstdlib>
 
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
@@ -17,15 +18,20 @@ const char* comm_large = "comm_large";
 const char* comp = "comp";
 const char* comp_large = "comp_large";
 const char* correctness_check = "correctness_check";
-const char* MPI_Send = "MPI_Send";
-const char* MPI_Recv = "MPI_Recv";
+const char* MPI_send = "MPI_Send";
+const char* MPI_recv = "MPI_Recv";
+const char* sortedInput = "sorted";
+const char* randomInput = "random";
+const char* reverseSortedInput = "reverse_sorted";
+const char* perturbed = "perturbed";
+
 
 /*
 Source: https://github.com/erenalbayrak/Odd-Even-Sort-mit-MPI/blob/master/implementation/c%2B%2B/OddEvenSort.cpp
 AI (Chat GPT) was used to create functions for data generation and correctness checking
 */
 
-int fill_vector_with_numbers(int *data,
+void initialize_reverse_sorted(int *data,
                                  long rank,
                                  int procs,
 								 int localSize)
@@ -34,8 +40,46 @@ int fill_vector_with_numbers(int *data,
     for (int i = 0; i < localSize; i++) {
 		data[i] = localSize * procs - (i + localSize * rank);    // reverse order
 	}
+}
 
-    return EXIT_SUCCESS;
+void initialize_sorted(int *data,
+                                 long rank,
+                                 int procs,
+								 int localSize)
+{
+
+    for (int i = 0; i < localSize; i++) {
+		data[i] = i + localSize * rank;    // in sorted order
+	}
+}
+
+void initialize_random(int *data,
+                                 long rank,
+                                 int procs,
+								 int localSize)
+{
+
+    for (int i = 0; i < localSize; i++) {
+		data[i] = rand() % 10000;    // in random order
+	}
+}
+
+void initialize_perturbed(int *data,
+                                 long rank,
+                                 int procs,
+								 int localSize)
+{
+
+    for (int i = 0; i < localSize; i++) {
+		data[i] = i + localSize * rank;    // in sorted order
+	}
+
+    int perturbationCount = localSize / 100; // 1% of the local array size
+
+    for (int i = 0; i < perturbationCount; i++) {
+        int indexToPerturb = rand() % localSize; // Choose a random index to perturb
+        data[indexToPerturb] = rand() % 10000; // Modify this as needed for your specific range
+    }
 }
 
 int findPartner(int phase, int rank) {
@@ -88,21 +132,21 @@ void parallel_sort(int *data, int rank, int count_processes, unsigned long data_
     	CALI_MARK_BEGIN(comm_large);
 
         if (rank % 2 == 0) {
-            CALI_MARK_BEGIN(MPI_Send);
+            CALI_MARK_BEGIN(MPI_send);
             MPI_Send(data, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD);
-            CALI_MARK_END(MPI_Send);
+            CALI_MARK_END(MPI_send);
 
-            CALI_MARK_BEGIN(MPI_Recv);
+            CALI_MARK_BEGIN(MPI_recv);
             MPI_Recv(other, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            CALI_MARK_END(MPI_Recv);
+            CALI_MARK_END(MPI_recv);
         } else {
-            CALI_MARK_BEGIN(MPI_Recv);
+            CALI_MARK_BEGIN(MPI_recv);
             MPI_Recv(other, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            CALI_MARK_END(MPI_Recv);
+            CALI_MARK_END(MPI_recv);
 
-            CALI_MARK_BEGIN(MPI_Send);
+            CALI_MARK_BEGIN(MPI_send);
             MPI_Send(data, (int) data_size, MPI_INT, partner, 0, MPI_COMM_WORLD);
-            CALI_MARK_END(MPI_Send);
+            CALI_MARK_END(MPI_send);
         }
 
 		CALI_MARK_END(comm_large);
@@ -122,9 +166,9 @@ void parallel_sort(int *data, int rank, int count_processes, unsigned long data_
         else
             copy(posHalfConcatData, concatData + concat_data_size, data);
     }
-
-	CALI_MARK_END(comp);
+	
     CALI_MARK_END(comp_large);
+    CALI_MARK_END(comp);
 
 }
 
@@ -139,6 +183,9 @@ int isSorted(int* nums, int vals) {
 int main(int argc, char** argv)
 {
     int rank, count_processes;
+    
+    cali::ConfigManager mgr;
+    mgr.start();
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -147,11 +194,28 @@ int main(int argc, char** argv)
 	CALI_MARK_BEGIN(main_function);
 
     int vals = atoi(argv[1]);
+    char* input = argv[2];
+    const char* input_type;
 	int localSize = vals/count_processes;
     int *data = new int[localSize];
 
 	CALI_MARK_BEGIN(data_init);
-    int status = fill_vector_with_numbers(data, rank, count_processes, localSize);
+    if (strcmp(input, sortedInput) == 0) {
+        initialize_sorted(data, rank, count_processes, localSize);
+        input_type = "sorted";
+    }
+    else if (strcmp(input, randomInput) == 0) {
+        initialize_random(data, rank, count_processes, localSize);
+        input_type = "random";
+    }
+    else if (strcmp(input, reverseSortedInput) == 0) {
+        initialize_reverse_sorted(data, rank, count_processes, localSize);
+        input_type = "reverse_sorted";
+    }
+    else if (strcmp(input, perturbed) == 0) {
+        initialize_perturbed(data, rank, count_processes, localSize);
+        input_type = "perturbed";
+    }
 	CALI_MARK_END(data_init);
 
     parallel_sort(data, rank, count_processes, localSize);
@@ -198,12 +262,13 @@ int main(int argc, char** argv)
 		const char* datatype = "int";
 		int sizeOfDatatype = sizeof(int);
 		int inputSize = vals;
-		const char* inputType = "ReverseSorted";
 		int num_procs = count_processes;
 		const char* num_threads = "N/A";
 		const char* num_blocks = "N/A";
 		int group_number = 18;
 		const char* implementation_source = "Online and AI";
+
+        printf("%s\n",input_type);
 
 		adiak::init(NULL);
 		adiak::launchdate();    // launch date of the job
@@ -214,13 +279,16 @@ int main(int argc, char** argv)
 		adiak::value("ProgrammingModel", programmingModel); // e.g., "MPI", "CUDA", "MPIwithCUDA"
 		adiak::value("Datatype", datatype); // The datatype of input elements (e.g., double, int, float)
 		adiak::value("SizeOfDatatype", sizeOfDatatype); // sizeof(datatype) of input elements in bytes (e.g., 1, 2, 4)
-		adiak::value("InputSize", inputSize); // The number of elements in input dataset (1000)
-		adiak::value("InputType", inputType); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
+		adiak::value("input_size", inputSize); // The number of elements in input dataset (1000)
+		adiak::value("input_type", input_type); // For sorting, this would be "Sorted", "ReverseSorted", "Random", "1%perturbed"
 		adiak::value("num_procs", num_procs); // The number of processors (MPI ranks)
 		adiak::value("num_threads", num_threads); // The number of CUDA or OpenMP threads
 		adiak::value("num_blocks", num_blocks); // The number of CUDA blocks 
 		adiak::value("group_num", group_number); // The number of your group (integer, e.g., 1, 10)
 		adiak::value("implementation_source", implementation_source); // Where you got the source code of your algorithm; choices: ("Online", "AI", "Handwritten").
+		
+		mgr.stop();
+        mgr.flush();
 	}
 
     MPI_Finalize();
