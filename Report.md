@@ -1247,6 +1247,10 @@ Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
 
 Quicksort (MPI):
 
+Looking at these graphs, we can see that for the sorted and reverse sorted inputs, the time decreases as we increase the number of proccesses. However, for random and 1% Perturbed, they did not scale well and only increased their time of excecution with increasing threads. Additionally, we see that the time of the Comm regions increses as we increase the number of ranks which makes sense since they have to do more communication with more ranks.
+
+Note: this algorithm could only scale to 2^20 input size due to the maximum value allowed for "tag" in MPI_SEND. The algorithm sends the pivot index which is the middle of the array to divide into halves so each half goes to one side of the recursive tree. Therefore, this number reaches 2000000 for 2^22 input which causes it to be above the max allowed value.
+
 -Sorted Input:
 
  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2ea46011-3590-4d34-885f-60ebf6b62222)
@@ -1295,6 +1299,70 @@ Quicksort (MPI):
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9535240c-4b90-4603-b3c3-0c139922167f)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/063660c4-595a-412e-a1a8-257810da9db5)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/043c40c0-0114-48cf-b87c-aa7449b8d05a)
+
+  Quicksort (CUDA):
+
+  The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
+  be 256 in these larger problem cases. Additionally, we can see that the time for the Comm regions increased as we increased the number of threads per block. 
+
+  - Random Input:
+    
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/8dbb80ef-6bd2-4b93-83cf-7666736e9dce)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/425e2cbd-a0df-4214-834e-285eff514b03)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/bfddbdc1-9c2e-4165-95c4-a23575aecded)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/805dd24a-304d-4dc8-a4d0-8555f42a083f)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4f81a708-771b-461c-9f45-ce1852fc4e53)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0a2bad7e-72c3-49a2-8f38-6338e9d9c9a2)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/40cf6870-7cb8-42dc-bc79-7d514c2e9a2e)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/27cd2858-d096-4ec4-9f19-e7a3f4384f41)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/76d8e572-fa5e-45c6-9f31-0a850d52b262)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e1d85ce6-a2f1-4398-928e-0fffc12c8a4b)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/50c62b8f-9329-45d0-86b9-d706d7541ed2)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0981be80-17e1-4654-9e25-f09ab9755e35)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4d1ed903-2716-4438-bc9a-e1996920ce3d)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/b74aa991-58e1-4442-a4fb-0c7b335be1c3)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/b07af483-d955-441d-ae35-e128d5ec25fe)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/b31a2711-de52-4e55-953a-1fc69a930c02)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/23297f18-bd35-453c-b08d-2ddbe9e324df)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/5737e82e-5a58-4537-ad82-f93015aa20c6)
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
