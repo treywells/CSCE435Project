@@ -1,5 +1,5 @@
 # CSCE 435 Group project
-![image](https://github.com/treywells/CSCE435Project/assets/112406802/a5d776cc-9906-4e22-8891-2a3d2e5f46dd)
+
 
 
 ## 0. Group number: 
