@@ -1246,11 +1246,8 @@ Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
 
 ## 4. Project Evaluation 
 
-![image](https://github.com/treywells/CSCE435Project/assets/98286168/750f7cef-24c1-44e9-9ead-d0d9eb489d28)
-![image](https://github.com/treywells/CSCE435Project/assets/98286168/6e4c606f-0ba7-41b3-8a29-f483f7a1d4a4)
-![image](https://github.com/treywells/CSCE435Project/assets/98286168/688baec2-fed3-4b55-9748-c067c5ac21fd)
+![image](download (5).png)
 
-![download (5)](https://github.com/treywells/CSCE435Project/assets/98286168/03bc7b45-eb30-45c3-914c-3f89353f21a2)
 
 
 
