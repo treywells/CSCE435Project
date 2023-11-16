@@ -1326,9 +1326,56 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/23297f18-bd35-453c-b08d-2ddbe9e324df)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/5737e82e-5a58-4537-ad82-f93015aa20c6)
   
+Bubble (MPI):
 
+  The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
+  be 256 in these larger problem cases. Additionally, we can see that the time for the Comm regions increased as we increased the number of threads per block. 
 
+  - Random Input:
 
+	![Alt text](image-3.png)
+	![Alt text](image-4.png)
+	![Alt text](image-5.png)
+	![Alt text](image-6.png)
+	![Alt text](image-7.png)
+	![Alt text](image-8.png)
+	![Alt text](image-9.png)
+	![Alt text](image-10.png)
+	![Alt text](image-11.png)
+	![Alt text](image-12.png)
+	![Alt text](image-13.png)
+	![Alt text](image-14.png)
+	![Alt text](image-15.png)
+	![Alt text](image-16.png)
+	![Alt text](image-17.png)
+	![Alt text](image-18.png)
+	![Alt text](image-19.png)
+	![Alt text](image-20.png)
+	![Alt text](image-21.png)
+	![Alt text](image-22.png)
+	![Alt text](image-23.png)
+	![Alt text](image-24.png)
+
+Bubble (CUDA):
+
+  The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
+  be 256 in these larger problem cases. Additionally, we can see that the time for the Comm regions increased as we increased the number of threads per block. 
+
+  - Random Input:
+
+	![Alt text](image-24.png)
+	![Alt text](image-25.png)
+	![Alt text](image-26.png)
+	![Alt text](image-27.png)
+	![Alt text](image-28.png)
+	![Alt text](image-29.png)
+	![Alt text](image-30.png)
+	![Alt text](image-31.png)
+	![Alt text](image-32.png)
+	![Alt text](image-33.png)
+	![Alt text](image-34.png)
+	![Alt text](image-35.png)
+	
 
 
 
