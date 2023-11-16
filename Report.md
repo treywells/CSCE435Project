@@ -1302,6 +1302,9 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 
   Quicksort (CUDA):
 
+  The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
+  be 256 in these larger problem cases. Additionally, we can see that the time for the Comm regions increased as we increased the number of threads per block. 
+
   - Random Input:
     
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/8dbb80ef-6bd2-4b93-83cf-7666736e9dce)
