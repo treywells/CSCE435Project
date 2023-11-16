@@ -1249,6 +1249,8 @@ Quicksort (MPI):
 
 Looking at these graphs, we can see that for the sorted and reverse sorted inputs, the time decreases as we increase the number of proccesses. However, for random and 1% Perturbed, they did not scale well and only increased their time of excecution with increasing threads. Additionally, we see that the time of the Comm regions increses as we increase the number of ranks which makes sense since they have to do more communication with more ranks.
 
+Note: this algorithm could only scale to 2^20 input size due to the maximum value allowed for "tag" in MPI_SEND. The algorithm sends the pivot index which is the middle of the array to divide into halves so each half goes to one side of the recursive tree. Therefore, this number reaches 2000000 for 2^22 input which causes it to be above the max allowed value.
+
 -Sorted Input:
 
  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2ea46011-3590-4d34-885f-60ebf6b62222)
