@@ -1,0 +1,14 @@
+#!/bin/bash
+
+inputSizes=(18 20)
+inputTypes=("sorted" "random")
+num_threads=(128 256)
+
+for size in "${inputSizes[@]}"; do
+    for type in "${inputTypes[@]}"; do
+        for thread in "${num_threads[@]}"; do
+            # Call your program with the specified parameters
+            sbatch cuda.grace_job $proc $((2**size)) "$type" 
+        done
+    done
+done
