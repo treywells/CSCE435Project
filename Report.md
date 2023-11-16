@@ -1242,3 +1242,15 @@ Source: https://homepages.math.uic.edu/~jan/mcs572/pipelinedsort.pdf
 	}
 ```
 Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
+
+
+## 4. Project Evaluation 
+
+
+
+
+
+
+
+
+
