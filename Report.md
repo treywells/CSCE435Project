@@ -1328,8 +1328,8 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
   
 Bubble (MPI):
 
-  The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
-  be 256 in these larger problem cases. Additionally, we can see that the time for the Comm regions increased as we increased the number of threads per block. 
+  The Max time/rank for practically every input size increased when we added more and more processes. This leads us to believe that the optimal number of processors for our implementation of the MPI Odd-Even Sort is approximately 2 or 4 processors. 
+  We of course expect the communication time to increase as we add more processors but even the computation time is increasing, which is definitely not expected. I personally believe that this is due to the fact that more processors means more phases and thus a longer sorting time.
 
   - Random Input:
 
@@ -1358,8 +1358,10 @@ Bubble (MPI):
 
 Bubble (CUDA):
 
-  The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
-  be 256 in these larger problem cases. Additionally, we can see that the time for the Comm regions increased as we increased the number of threads per block. 
+  The Max time/rank for the CUDA implementation of the Bubble sort followed a similar pattern to the MPI implementation where increasing the threads/block roughly increases the execution time for the algorithm as a whole. This leads us to believe that the optimal amount of threads for the CUDA Bubble implementation is approximately 128 to 256 threads. 
+  Like MPI, the communication time is expected to increase, and it did, but the computation time also increase which leads us to believe that Bubble Sort as a whole is not the best option for parallel computing.
+
+  When we do parallelize it, it will perform much better than the serial counterpart but adding more and more parallelization will create an overhead that is not outweighed by the increase in speed.
 
   - Random Input:
 
@@ -1375,7 +1377,6 @@ Bubble (CUDA):
 	![Alt text](image-33.png)
 	![Alt text](image-34.png)
 	![Alt text](image-35.png)
-	
 
 - Mergesort(MPI):
   
