@@ -1246,6 +1246,7 @@ Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
 ## 4. Project Evaluation 
 
 Quicksort (MPI):
+
 -Sorted Input:
 
  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2ea46011-3590-4d34-885f-60ebf6b62222)
