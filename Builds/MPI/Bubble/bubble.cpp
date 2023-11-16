@@ -58,9 +58,9 @@ void initialize_random(int *data,
                                  int procs,
 								 int localSize)
 {
-
+    srand(time(NULL));
     for (int i = 0; i < localSize; i++) {
-		data[i] = rand() % 10000;    // in random order
+		data[i] = rand() % 2147483648;    // in random order
 	}
 }
 
@@ -186,18 +186,20 @@ int main(int argc, char** argv)
     
     cali::ConfigManager mgr;
     mgr.start();
-
+	
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &count_processes);
 
-	CALI_MARK_BEGIN(main_function);
+    CALI_MARK_BEGIN(main_function);
+
 
     int vals = atoi(argv[1]);
     char* input = argv[2];
     const char* input_type;
 	int localSize = vals/count_processes;
     int *data = new int[localSize];
+    int* gathered_data = nullptr;
 
 	CALI_MARK_BEGIN(data_init);
     if (strcmp(input, sortedInput) == 0) {
@@ -217,21 +219,29 @@ int main(int argc, char** argv)
         input_type = "perturbed";
     }
 	CALI_MARK_END(data_init);
+	
+	MPI_Barrier(MPI_COMM_WORLD);
 
     parallel_sort(data, rank, count_processes, localSize);
 
 	// Create a buffer to gather data on rank 0
-    int *gathered_data = nullptr;
+    //int *gathered_data = nullptr;
     if (rank == 0) {
         gathered_data = new int[vals];
     }
+    
+    MPI_Barrier(MPI_COMM_WORLD);
 
 	CALI_MARK_BEGIN(comm);
     CALI_MARK_BEGIN(comm_large);
+    CALI_MARK_BEGIN("MPI_Gather");
 
     // Gather data from all processes onto rank 0
     MPI_Gather(data, localSize, MPI_INT, gathered_data, localSize, MPI_INT, 0, MPI_COMM_WORLD);
+    
+    MPI_Barrier(MPI_COMM_WORLD);
 
+    CALI_MARK_END("MPI_Gather");
 	CALI_MARK_END(comm_large);
     CALI_MARK_END(comm);
 	
@@ -248,15 +258,14 @@ int main(int argc, char** argv)
     	CALI_MARK_END(correctness_check);
         // Clean up gathered_data
         delete[] gathered_data;
+	    delete[] data;
     }
 
 
+
+
     CALI_MARK_END(main_function);
-	delete[] data;
-
-
 	if (rank == 0) {
-
 		const char* algorithm = "BubbleSort";
 		const char* programmingModel = "MPI";
 		const char* datatype = "int";
@@ -267,8 +276,6 @@ int main(int argc, char** argv)
 		const char* num_blocks = "N/A";
 		int group_number = 18;
 		const char* implementation_source = "Online and AI";
-
-        printf("%s\n",input_type);
 
 		adiak::init(NULL);
 		adiak::launchdate();    // launch date of the job

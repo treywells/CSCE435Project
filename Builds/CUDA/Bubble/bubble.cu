@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <curand_kernel.h>
 
 #include <caliper/cali.h>
 #include <caliper/cali-manager.h>
@@ -122,13 +123,13 @@ __global__ void initialize_sorted(int* array, int size) {
 
 __global__ void initialize_random(int* array, int size, unsigned long long seed) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    //curandState state;
-    //curand_init(seed, tid, 0, &state);
+    curandState state;
+    curand_init(seed, tid, 0, &state);
 
     // Generate random numbers and scale them to the desired range
     if (tid < size) {
-        //array[tid] = static_cast<int>(curand_uniform(&state) * static_cast<float>(INT_MAX));
-        array[tid] = 1;
+        array[tid] = static_cast<int>(curand_uniform(&state) * static_cast<float>(INT_MAX));
+        //array[tid] = 1;
     }
 }
 
@@ -160,10 +161,10 @@ int main(int argc, char* argv[])
 
 	//THREADS = atoi(argv[1]);
     //NUM_VALS = atoi(argv[2]);
-    //char* input = argv[3];
+    char* input = argv[3];
     THREADS = 128;
-    NUM_VALS = 256;
-    const char* input = "random";
+    NUM_VALS = 1048576;
+    // const char* input = "random";
     const char* input_type;
     size_t size = NUM_VALS * sizeof(int);
     BLOCKS = NUM_VALS / THREADS;
@@ -208,32 +209,32 @@ int main(int argc, char* argv[])
     
     printf("data generated\n");
     
-    cudaMemcpy(h_array, d_array, size, cudaMemcpyDeviceToHost); 
+    // cudaMemcpy(h_array, d_array, size, cudaMemcpyDeviceToHost); 
     
-    for (int i = 0; i < NUM_VALS; i++) {
-        printf("%d ", d_array[i]);
-    }
-    printf("\n");
+    // for (int i = 0; i < NUM_VALS; i++) {
+    //     printf("%d ", h_array[i]);
+    // }
+    // printf("\n");
 
-    CALI_MARK_END(data_init);
+    // CALI_MARK_END(data_init);
 
-    CALI_MARK_BEGIN(comp);
-    CALI_MARK_BEGIN(comp_large);
+    // CALI_MARK_BEGIN(comp);
+    // CALI_MARK_BEGIN(comp_large);
 
 
-    do {
+    // do {
 
-        for (int i = 0; i < THREADS * 2; i++) {
-            offSet = i;
-            // POSSIBLE CHANGE: if offset != 0 USE bubbleSortDeviceParallel << < BLOCKS-1, THREADS >> > (d_array, offSet);
-            bubbleSortDeviceParallel << < BLOCKS, THREADS >> > (d_array, offSet, THREADS, BLOCKS);
-        }
+    //     for (int i = 0; i < THREADS * 2; i++) {
+    //         offSet = i;
+    //         // POSSIBLE CHANGE: if offset != 0 USE bubbleSortDeviceParallel << < BLOCKS-1, THREADS >> > (d_array, offSet);
+    //         bubbleSortDeviceParallel << < BLOCKS, THREADS >> > (d_array, offSet, THREADS, BLOCKS);
+    //     }
 
-        BLOCKS--;
-    } while (BLOCKS > 0);
+    //     BLOCKS--;
+    // } while (BLOCKS > 0);
 
-    cudaDeviceSynchronize();
-    printf("comp done\n");
+    // cudaDeviceSynchronize();
+    // printf("comp done\n");
 
     // CALI_MARK_END(comp_large);
     // CALI_MARK_END(comp);
