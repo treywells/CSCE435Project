@@ -1242,3 +1242,98 @@ Source: https://homepages.math.uic.edu/~jan/mcs572/pipelinedsort.pdf
 	}
 ```
 Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
+```
+## 4. Project Evaluation 
+
+Quicksort (MPI):
+
+-Sorted Input:
+
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2ea46011-3590-4d34-885f-60ebf6b62222)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0c66d836-65ba-4cae-b074-3b8b32a3fc7a)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0140a972-5fcc-46b6-b392-3468f422338a)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/008918be-9e83-4bea-8387-813138285acd)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/eb3f11e1-ba94-47dc-973e-fa46d906fa28)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/ee6952bb-546d-4b46-a82e-6266481f6bdf)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/f50508ac-fbd4-4aee-bb78-481c955abdee)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/a505e4bf-7509-44ba-a8f3-d027240ef0aa)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/6e931d50-dc1d-496d-9f24-2ca21e04d8d2)
+ ![image](https://github.com/treywells/CSCE435Project/assets/98286168/08b188ca-34db-45e5-b3b3-628af9b5963a)
+
+- Random Input:
+
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/fe863e8e-350e-4b71-96d7-69f6323941f7)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/ddf97570-83c0-4c2b-be29-a6633510d4a0)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2af5d3cd-611a-4ee3-9777-35a42570de33)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/35d2eedc-c358-407f-8e64-134260218c44)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4b2f884c-7113-44e4-a280-143020b9b464)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e870e55c-5cf1-4ee5-89ba-77a22a1ac4f8)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2076c67e-1911-4900-8344-b4a938279dc4)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9b5fd55c-8cd8-4bad-ad82-47ae4835c301)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/499ebad9-d77c-4c67-9db3-b99eb6e7f305)
+
+- Reverse Sorted:
+  
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4f7747f1-bc23-4802-99f1-712148684e18)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e280e9bd-1cdd-4020-aa03-732b1a4e55e9)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/74307645-fc73-46ed-b38a-ee619fc6cb43)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/5da28868-095d-48c2-a2ac-4a7e61b0e24b)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2874ec23-7ff6-4054-b32d-c7686429d63a)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/d0f73f83-6b01-4bc3-85bf-9a54e988064b)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4182891b-e8f8-418c-ac61-626b8e4abce5)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2e7dd505-7119-4e96-8968-07559f90e31a)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0a42c197-7fab-4595-934a-8aae67b44b60)
+
+- 1% Perturbed:
+  
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/a04bcaab-0813-4b39-805e-7398b7fbfc8c)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/7d541f7f-6db5-4d1a-93ad-674c9f8c34c5)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2945a1a2-c541-4c3e-93f8-e8e4df03e9b4)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/14b48d66-32bc-469f-994c-f9441c3871e3)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/faf29b4e-ecd5-487f-ae84-d9b12dd411c8)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/c0b6dbb5-a0f9-4cb7-9772-e831d8f860b7)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9535240c-4b90-4603-b3c3-0c139922167f)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/063660c4-595a-412e-a1a8-257810da9db5)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/043c40c0-0114-48cf-b87c-aa7449b8d05a)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
