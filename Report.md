@@ -1247,59 +1247,61 @@ Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
 
 Quicksort (MPI):
 
-Looking at these graphs, we can see that for the sorted and reverse sorted inputs, the time decreases as we increase the number of proccesses. However, for random and 1% Perturbed, they did not scale well and only increased their time of excecution with increasing threads. Additionally, we see that the time of the Comm regions increses as we increase the number of ranks which makes sense since they have to do more communication with more ranks.
+Looking at these graphs, we can see that for all the input types, the time decreases as we increase the number of proccesses for main and comp. Specifically, sorted and random input seemed to scale the best with drastic decreases in runtime for higher number of proccesses. Additionally, we can see that communication time increases as we increase the number of processes.
 
 Note: this algorithm could only scale to 2^20 input size due to the maximum value allowed for "tag" in MPI_SEND. The algorithm sends the pivot index which is the middle of the array to divide into halves so each half goes to one side of the recursive tree. Therefore, this number reaches 2000000 for 2^22 input which causes it to be above the max allowed value.
 
 -Sorted Input:
 
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2ea46011-3590-4d34-885f-60ebf6b62222)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0c66d836-65ba-4cae-b074-3b8b32a3fc7a)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0140a972-5fcc-46b6-b392-3468f422338a)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/008918be-9e83-4bea-8387-813138285acd)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/eb3f11e1-ba94-47dc-973e-fa46d906fa28)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/ee6952bb-546d-4b46-a82e-6266481f6bdf)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/f50508ac-fbd4-4aee-bb78-481c955abdee)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/a505e4bf-7509-44ba-a8f3-d027240ef0aa)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/6e931d50-dc1d-496d-9f24-2ca21e04d8d2)
- ![image](https://github.com/treywells/CSCE435Project/assets/98286168/08b188ca-34db-45e5-b3b3-628af9b5963a)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/d23359f5-3ea4-4d3b-b146-c4d59158d015)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/a2be2362-357a-4cc7-a917-ff019740b954)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/bbe3616e-1ceb-4ef3-91fa-ed8ac833e42f)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/f895f6c0-cca5-4e87-874a-71ccbdda5ef9)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/cfa150ad-fe67-482e-bf77-f20a328ec854)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/3a77849e-14d0-4879-ad9b-5481796eb2b5)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/e676d98c-855f-4402-834b-9147c988b13f)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/9d8afda9-f2d3-4bd3-af65-035dee9a42d9)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/b6546adf-4d4b-416f-af3e-29778b59e664)
+
+
 
 - Random Input:
 
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/fe863e8e-350e-4b71-96d7-69f6323941f7)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/ddf97570-83c0-4c2b-be29-a6633510d4a0)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2af5d3cd-611a-4ee3-9777-35a42570de33)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/35d2eedc-c358-407f-8e64-134260218c44)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4b2f884c-7113-44e4-a280-143020b9b464)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e870e55c-5cf1-4ee5-89ba-77a22a1ac4f8)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2076c67e-1911-4900-8344-b4a938279dc4)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9b5fd55c-8cd8-4bad-ad82-47ae4835c301)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/499ebad9-d77c-4c67-9db3-b99eb6e7f305)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/bae5c5ca-3ef7-4819-bd40-99f6146e4517)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/5902b593-f067-4138-8500-c81ded2e9756)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/2b547bf0-5ecb-46b0-9a95-1b28cbc490d1)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/659e0c52-6316-4be5-921f-f470caaa582a)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/3c510257-7d4c-44f7-9fef-30b0ebc4ab4a)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/da05aef6-cef3-4327-9a97-532e8ca7cce4)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/806c90f1-f619-4f51-b9da-27b3bc434ad8)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/db7d7925-2283-4b04-8d58-897805695cbb)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/ff4f335c-ca31-4a88-8e10-ccf884710139)
 
 - Reverse Sorted:
-  
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4f7747f1-bc23-4802-99f1-712148684e18)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e280e9bd-1cdd-4020-aa03-732b1a4e55e9)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/74307645-fc73-46ed-b38a-ee619fc6cb43)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/5da28868-095d-48c2-a2ac-4a7e61b0e24b)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2874ec23-7ff6-4054-b32d-c7686429d63a)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/d0f73f83-6b01-4bc3-85bf-9a54e988064b)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4182891b-e8f8-418c-ac61-626b8e4abce5)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2e7dd505-7119-4e96-8968-07559f90e31a)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0a42c197-7fab-4595-934a-8aae67b44b60)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/b89d6a83-489e-426c-bcb5-6092f697c68c)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/77648296-cb57-4603-81f9-0113ee3baa23)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/18b69f0c-c367-4f47-8e32-b710b398a1cc)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/a7d4c80c-1429-4d23-a235-ef24017f9b05)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/54a3cc9b-a549-4819-b014-8ada6a32cdac)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/36f84b6e-86d5-405e-ba15-9bdbc221e6f4)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/af04b6ac-6a5f-4cb4-bdc7-033a2ddc976c)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/319f6d7a-0f38-4ea5-9260-4f0cdd272e7b)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/6fb7dc8f-33fd-490b-9323-39f12a9e17e6)
+
+ 
 
 - 1% Perturbed:
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/d57c8196-6e60-4213-88a6-cfbc52a113b4)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/07e153ea-981d-49cf-b854-ccf361614808)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/9fe5d1fe-62e2-4ea4-b498-9a90eda35172)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/83837ec8-02f2-40b1-a0c6-590637650eb8)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/8f11da51-d889-4471-9871-1872ea5fe312)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/a494508b-7548-4d45-8e12-fb83fe8bb162)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/e4640989-e75f-4db6-9c6d-27debf2066c0)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/728b9596-1782-443b-bf91-8f9ec007e539)
+![image](https://github.com/treywells/CSCE435Project/assets/98286168/ff618321-dadc-4fd0-b72c-1bdd09304f86)
   
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/a04bcaab-0813-4b39-805e-7398b7fbfc8c)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/7d541f7f-6db5-4d1a-93ad-674c9f8c34c5)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2945a1a2-c541-4c3e-93f8-e8e4df03e9b4)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/14b48d66-32bc-469f-994c-f9441c3871e3)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/faf29b4e-ecd5-487f-ae84-d9b12dd411c8)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/c0b6dbb5-a0f9-4cb7-9772-e831d8f860b7)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9535240c-4b90-4603-b3c3-0c139922167f)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/063660c4-595a-412e-a1a8-257810da9db5)
-  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/043c40c0-0114-48cf-b87c-aa7449b8d05a)
-
+ 
   Quicksort (CUDA):
 
   The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
