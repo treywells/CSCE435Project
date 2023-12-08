@@ -1327,6 +1327,38 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/b31a2711-de52-4e55-953a-1fc69a930c02)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/23297f18-bd35-453c-b08d-2ddbe9e324df)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/5737e82e-5a58-4537-ad82-f93015aa20c6)
+
+  - Sorted
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e6b03607-9af0-4809-8f18-5c869a3ae36f)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/7d596565-6d4c-4c85-b824-40b0f388d0f3)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/3a129cc9-f60b-49d9-a4c8-2bfdc23d0f3f)
+
+  - Reverse Sorted
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4f8a2709-fce9-41fc-a3f6-e8431200821d)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e762415f-718b-4abd-90ad-40429d3a4ff3)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9820e3de-6ddd-48db-b30d-dac28c41383f)
+
+  - 1% Perturbed
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/f8031dd9-f14c-4962-a010-8c1e1627cde4)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/d6ff150b-ac12-497d-9209-f71878e8a194)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/569bef3b-8cea-4142-8743-fe736271929e)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2428e5ee-3726-423e-bf75-061133c3f975)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/a0bb5db1-1b61-43c9-bdc6-a2797548496c)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/02d70231-8201-4c3e-8fa2-6e862cf11742)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/6c05a5dd-cc9a-40ea-86ee-2e5d5848c0f5)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/0f19ef98-5381-4625-a71b-e865f780e65c)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2f1fc65d-0db7-402c-b69e-4c2513cb7faf)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/602b2d37-a6c5-4206-bfce-59652f36dd3a)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/bfd71f93-7802-4248-992c-e6ce891507f8)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4956ad00-f547-4ca9-9fe7-3f25d43de771)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/eeea7301-7a7e-4fad-98c4-d325fd17cddc)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/2dc5e75c-8d0a-4092-8d01-18a6f378a347)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/295daaf0-7ba7-4a85-a3be-8e93e4fb9d8a)
+  ![image](https://github.com/treywells/CSCE435Project/assets/98286168/1d688c72-a4c3-4a59-bfb8-37467b520aff)
+  
+
+
+
   
 Bubble (MPI):
 
