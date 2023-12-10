@@ -1368,7 +1368,7 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 
 **Random Input:**
 
-	![Alt text](image-3.png)
+![Alt text](image-3.png)
 	![Alt text](image-4.png)
 	![Alt text](image-5.png)
 	![Alt text](image-6.png)
@@ -1400,7 +1400,7 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 
 **Random Input:**
 
-	![Alt text](image-24.png)
+![Alt text](image-24.png)
 	![Alt text](image-25.png)
 	![Alt text](image-26.png)
 	![Alt text](image-27.png)
