@@ -1414,7 +1414,10 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 
 ### Mergesort(MPI):
   
-  The below graphs were generated using my mergesort MPI algorithm on a variety of input types.
+The below graphs were generated using my mergesort MPI algorithm on a variety of input types.
+Analyzing the overall time and Avg time/rank, it is clear that my parallel mergesort algorithm does not parallelize well overall. While the computation time did gradually decrease on average with increased processors, the benefit was outweighed by the increase to the communication time. 
+This is not surprising, as Mergesort is a terribly inefficient parallel sorting algorithm due to the high cost of the sequential Merge. At each recursive call, the algorithm must wait on the previous sequential merge to finish and so every recursive layer has fewer and fewer processes that are able to do anything.
+Trends regarding data size are also expected. As there is more data, communication and computation time will gradually increase. There also does not seem to be any significant increase in benefit as you get more values, likely due to the previously mentioned inefficiency
   
   
 **Sorted**
