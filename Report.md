@@ -1245,13 +1245,13 @@ Source: https://gist.github.com/mrquincle/f738daa6bd27367c09d0f6ae81fd6ca2
 ```
 ## 4. Project Evaluation 
 
-Quicksort (MPI):
+### Quicksort (MPI):
 
 Looking at these graphs, we can see that for all the input types, the time decreases as we increase the number of proccesses for main and comp. Specifically, sorted and random input seemed to scale the best with drastic decreases in runtime for higher number of proccesses. Additionally, we can see that communication time increases as we increase the number of processes.
 
 Note: this algorithm could only scale to 2^20 input size due to the maximum value allowed for "tag" in MPI_SEND. The algorithm sends the pivot index which is the middle of the array to divide into halves so each half goes to one side of the recursive tree. Therefore, this number reaches 2000000 for 2^22 input which causes it to be above the max allowed value.
 
--Sorted Input:
+**Sorted Input:**
 
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/d23359f5-3ea4-4d3b-b146-c4d59158d015)
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/a2be2362-357a-4cc7-a917-ff019740b954)
@@ -1265,7 +1265,7 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 
 
 
-- Random Input:
+**Random Input**
 
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/bae5c5ca-3ef7-4819-bd40-99f6146e4517)
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/5902b593-f067-4138-8500-c81ded2e9756)
@@ -1277,7 +1277,7 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/db7d7925-2283-4b04-8d58-897805695cbb)
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/ff4f335c-ca31-4a88-8e10-ccf884710139)
 
-- Reverse Sorted:
+**Reverse Sorted:**
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/b89d6a83-489e-426c-bcb5-6092f697c68c)
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/77648296-cb57-4603-81f9-0113ee3baa23)
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/18b69f0c-c367-4f47-8e32-b710b398a1cc)
@@ -1290,7 +1290,7 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 
  
 
-- 1% Perturbed:
+**1% Perturbed:**
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/d57c8196-6e60-4213-88a6-cfbc52a113b4)
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/07e153ea-981d-49cf-b854-ccf361614808)
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9fe5d1fe-62e2-4ea4-b498-9a90eda35172)
@@ -1302,12 +1302,12 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 ![image](https://github.com/treywells/CSCE435Project/assets/98286168/ff618321-dadc-4fd0-b72c-1bdd09304f86)
   
  
-  Quicksort (CUDA):
+  ### Quicksort (CUDA):
 
   The time of the GPU increased for smaller input sizes, but then started to decrease as we get to larger problems. The optimal thread per block size seemed to 
   be 256 in these larger problem cases. Additionally, we can see that the time for the Comm regions increased as we increased the number of threads per block. 
 
-  - Random Input:
+  **Random Input:**
     
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/8dbb80ef-6bd2-4b93-83cf-7666736e9dce)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/425e2cbd-a0df-4214-834e-285eff514b03)
@@ -1328,17 +1328,17 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/23297f18-bd35-453c-b08d-2ddbe9e324df)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/5737e82e-5a58-4537-ad82-f93015aa20c6)
 
-  - Sorted
+**Sorted**
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e6b03607-9af0-4809-8f18-5c869a3ae36f)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/7d596565-6d4c-4c85-b824-40b0f388d0f3)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/3a129cc9-f60b-49d9-a4c8-2bfdc23d0f3f)
 
-  - Reverse Sorted
+**Reverse Sorted**
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/4f8a2709-fce9-41fc-a3f6-e8431200821d)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/e762415f-718b-4abd-90ad-40429d3a4ff3)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/9820e3de-6ddd-48db-b30d-dac28c41383f)
 
-  - 1% Perturbed
+**1% Perturbed**
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/f8031dd9-f14c-4962-a010-8c1e1627cde4)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/d6ff150b-ac12-497d-9209-f71878e8a194)
   ![image](https://github.com/treywells/CSCE435Project/assets/98286168/569bef3b-8cea-4142-8743-fe736271929e)
@@ -1360,12 +1360,12 @@ Note: this algorithm could only scale to 2^20 input size due to the maximum valu
 
 
   
-Bubble (MPI):
+### Bubble (MPI):
 
   The Max time/rank for practically every input size increased when we added more and more processes. This leads us to believe that the optimal number of processors for our implementation of the MPI Odd-Even Sort is approximately 2 or 4 processors. 
   We of course expect the communication time to increase as we add more processors but even the computation time is increasing, which is definitely not expected. I personally believe that this is due to the fact that more processors means more phases and thus a longer sorting time.
 
-  - Random Input:
+**Random Input:**
 
 	![Alt text](image-3.png)
 	![Alt text](image-4.png)
@@ -1390,14 +1390,14 @@ Bubble (MPI):
 	![Alt text](image-23.png)
 	![Alt text](image-24.png)
 
-Bubble (CUDA):
+### Bubble (CUDA):
 
   The Max time/rank for the CUDA implementation of the Bubble sort followed a similar pattern to the MPI implementation where increasing the threads/block roughly increases the execution time for the algorithm as a whole. This leads us to believe that the optimal amount of threads for the CUDA Bubble implementation is approximately 128 to 256 threads. 
   Like MPI, the communication time is expected to increase, and it did, but the computation time also increase which leads us to believe that Bubble Sort as a whole is not the best option for parallel computing.
 
   When we do parallelize it, it will perform much better than the serial counterpart but adding more and more parallelization will create an overhead that is not outweighed by the increase in speed.
 
-  - Random Input:
+**Random Input:**
 
 	![Alt text](image-24.png)
 	![Alt text](image-25.png)
@@ -1412,16 +1412,89 @@ Bubble (CUDA):
 	![Alt text](image-34.png)
 	![Alt text](image-35.png)
 
-- Mergesort(MPI):
+### Mergesort(MPI):
   
-  The below graphs were generated using my mergesort MPI algorithm on a sorted list of integers. Initial analysis seems to indicate that my mergesort MPI implementation does not scale well in the slightest apart from a couple of interesting exceptions. For whatever reason, the average time per rank decreases signficantly for only a few types numbers of threads. This is inconsistent which could indicate an error on my part when generating the data, but it is known that mergesort is ineffecient for parallelism in general so the graphs could just be a consequence of that.  
+  The below graphs were generated using my mergesort MPI algorithm on a variety of input types.
   
-![image](https://github.com/treywells/CSCE435Project/assets/112406802/cadd4801-282b-45b8-9959-fc29f139c16a)
-![image](https://github.com/treywells/CSCE435Project/assets/112406802/8a290c56-4eae-436f-b105-f939840af21b)
-![image](https://github.com/treywells/CSCE435Project/assets/112406802/ddc5a9c6-0c78-4028-8f37-03b49c82cbcd)
-![image](https://github.com/treywells/CSCE435Project/assets/112406802/f01b39d5-d1f8-4a9c-8c39-572fe5529b92)
+  
+**Sorted**
 
-- Mergesort Cuda
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/c6e2902c-ae5c-4825-a0f7-3119c5f75386)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/6bd08bc5-c32f-4f53-ae27-e6f55af50329)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/4689720c-fe14-47df-b9db-98974d76dc93)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/36eeecc8-3c4e-463b-a17f-a95e8c4956b5)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/fd593fa1-e8a4-4b30-af1e-31d9cd89f155)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/c6035787-c167-4153-b2d7-afc545caca4f)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/0fffc1f6-f013-4f13-8f86-1295acf789e8)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/af7233c3-15bb-4be6-8c84-54f6e23d330b)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/e55f33d1-3eba-4c19-993c-bb2a9175af7b)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/48eec82e-25f2-4dcb-9adb-ce7e6e2d9f19)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/152fca9a-0994-41dc-834d-eec44939a800)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/1066a6fd-6ad3-4d6d-bcc5-1c52149aac3e)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/6660f2d8-0742-4b3e-a1bb-bfebddf06949)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/ce542a11-6205-4b7b-a26c-989081e3b8ee)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/799cbcc4-7dd5-4a00-81d5-eb41c9f645b3)
+
+**Random**
+
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/fe287557-49df-475d-acf1-8257ae333634)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/408c4ed3-a5cf-459a-90c7-bf7b3091e244)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/4bf3050c-9181-4862-b392-e20f4219e900)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/6f0775f4-c910-49ba-855c-72699522bebd)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/8dee8830-de18-47ba-bdcd-e9edb6e635df)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/74da02a3-c62c-49c6-9d74-cbd6174de609)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/db169154-2b36-43b5-8198-7b5ad8713999)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/cfe0239d-a482-46ff-bec3-758097648f72)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/5d6aacc9-e508-4384-a2b8-b99a4708bcb0)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/48eec82e-25f2-4dcb-9adb-ce7e6e2d9f19)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/152fca9a-0994-41dc-834d-eec44939a800)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/1066a6fd-6ad3-4d6d-bcc5-1c52149aac3e)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/611f773b-5886-410a-99f7-f3cb0970ef35)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/44342456-9868-47c6-96a8-93a2bc80724e)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/8d86d5b0-175e-422a-860d-5b822b442da3)
+
+
+
+**Reverse Sorted**
+
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/be9a2710-6bd6-4c59-bf5e-ac6884948d80)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/c5560351-a2b0-42e1-a576-4d4ab9c160e8)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/66e8c991-abe9-4cd0-90d1-e961641682e1)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/29506243-58d0-4691-8a04-47ab31ce3b6e)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/19bea8d2-31ba-4967-b08f-d3cec0075200)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/5fd74c55-e4cb-4de3-b634-2c6cd236a4a4)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/419d15a1-8096-4422-bf7e-7e7eabf2341d)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/40f32337-f178-4882-9636-827010b17fb1)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/341d629e-56e2-4319-9b14-74c18ab3da73)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/aff57e97-aad7-44e7-8d5b-0165dcaabd03)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/ba7b958b-a90a-421c-b980-4e49b3bcf9cf)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/e0a3396f-0e2d-411d-989f-306fdda9f461)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/a15a1c60-df97-4386-8da7-d19e19a4f105)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/202bec32-ec93-4fd5-876d-1fe63e4aa2d2)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/53972ccd-cd08-408a-9d0e-349945b9eb39)
+
+
+**1% Perturbed**
+
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/28720dc6-da19-4c57-9dd5-a1a7faef9b12)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/0a0813d7-14f6-4966-848f-38a1cd4a0b0c)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/7f43b225-a17e-4773-bfd3-96a370dae8d5)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/5972a1be-2992-4989-a961-3075e8135b33)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/6aa5bc60-1804-4a2f-9c62-37e0f79a4c53)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/3c788a16-397c-4da3-b4e9-fad64421dd02)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/60c91a18-494b-4017-9226-5d06df9697c0)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/1115a96b-b908-4b55-acd2-69aa66c3099b)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/0dc9fdcf-3fc2-4f21-b577-7dbb1e79b503)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/19163263-a2bb-4799-867a-02bef196b4c8)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/c1466d4d-4e48-4035-bbd0-649d039e9dcc)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/87e5d702-ba76-4321-b01a-1755b016888b)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/7dc39282-0d5c-4b99-9cfd-d267af6a91e2)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/8094e7ca-d5b5-4bf0-9a50-eedb3a74851a)
+![image](https://github.com/treywells/CSCE435Project/assets/112406802/274a67a1-f355-416f-bd75-7937bebd573d)
+
+
+
+### Mergesort Cuda
 
 The Graphs below were generated by a GPU parallelization of mergesort. Initial analysis seems to indicate that the average computation time was steadily decreasing until reaching 1024 threads at which point there was a drastic dropoff
 
@@ -1429,7 +1502,10 @@ The Graphs below were generated by a GPU parallelization of mergesort. Initial a
 ![image](https://github.com/treywells/CSCE435Project/assets/112406802/4d4fd01f-4ec0-4ffa-aed5-7675ed24d528)
 ![image](https://github.com/treywells/CSCE435Project/assets/112406802/08736190-6bb4-4143-a4a6-bb015f4eab63)
 ![image](https://github.com/treywells/CSCE435Project/assets/112406802/8645f0de-0f24-44c6-909d-4e45b8aa4d14)
-
+**Sorted**
+**Random**
+**Reverse Sorted**
+**1% Perturbed**
 
 
 # 5. Presentation Graphs:
